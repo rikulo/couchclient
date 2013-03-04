@@ -1,0 +1,11 @@
+name: rikulo_memcached
+version: 0.1.0
+description: >
+  Rikulo Memcached client is an implementation of the famous distributed
+  memory object caching system [Memcached](http://memcached.org/) in Dart
+  language.
+authors:
+- Henri Chen <henrichen@rikulo.org>
+homepage: http://rikulo.org
+dependencies:
+  logging: any
