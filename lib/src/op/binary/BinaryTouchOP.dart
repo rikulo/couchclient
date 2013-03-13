@@ -45,21 +45,21 @@ class BinaryTouchOP extends BinaryOP implements TouchOP {
     //1, 1 byte: Opcode
     cmd[1] = OPType.touch.ordinal;
     //2, 2 bytes: Key length
-    Arrays.copy(int16ToBytes(keylen), 0, cmd, 2, 2);
+    copyList(int16ToBytes(keylen), 0, cmd, 2, 2);
     //4, 2 bytes: extra length
-    Arrays.copy(int8ToBytes(_req_extralen), 0, cmd, 4, 1);
+    copyList(int8ToBytes(_req_extralen), 0, cmd, 4, 1);
     //6, 2 bytes: vBucket id
     if (0 != vbucketID)
-      Arrays.copy(int16ToBytes(vbucketID), 0, cmd, 6, 2);
+      copyList(int16ToBytes(vbucketID), 0, cmd, 6, 2);
     //8, 4 bytes: total body length
-    Arrays.copy(int32ToBytes(bodylen), 0, cmd, 8, 4);
+    copyList(int32ToBytes(bodylen), 0, cmd, 8, 4);
     //12, 4 bytes: Opaque
     //16, 8 bytes: CAS
     //24, _req_extralen: extra
     //exp
-    Arrays.copy(int32ToBytes(exp), 0, cmd, 24, 4);
+    copyList(int32ToBytes(exp), 0, cmd, 24, 4);
     //24+_req_extralen, keylen: key
-    Arrays.copy(keybytes, 0, cmd, 24 + _req_extralen, keylen);
+    copyList(keybytes, 0, cmd, 24 + _req_extralen, keylen);
     //24+_req_extralen+keylen, valuelen
     print("_prepareTouchCommand:$cmd\n");
     return cmd;

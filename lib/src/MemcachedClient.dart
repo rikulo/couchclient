@@ -1,6 +1,6 @@
 part of rikulo_memcached;
 
-abstract class Client {
+abstract class MemcachedClient {
 
   /**
    * Set unconditinally the specified document. Returns
@@ -105,14 +105,12 @@ abstract class Client {
    */
   void close();
 
-//  DesignDoc getDesignDoc(String docName); // lazy eval
-
-  factory Client(String host, {int port:11211, String bucket:'default', OPFactory factory})
-  => new _ClientImpl(host, port, bucket, factory);
+  factory MemcachedClient(String host, {int port:11211, String bucket:'default', String password, OPFactory factory})
+  => new _MemcachedClientImpl(host, port, bucket, password, factory);
 
 }
 
-class _ClientImpl implements Client {
+class _MemcachedClientImpl implements MemcachedClient {
   Socket _socket;
   bool connected = false;
   Queue<OP> _opQueue;
@@ -120,8 +118,13 @@ class _ClientImpl implements Client {
   OP _currentOp;
   int seq = 0;
   OPFactory _factory;
+  final String bucketName;
+  final String password;
 
-  _ClientImpl(String host, int port, String bucket, [OPFactory factory]) {
+  _MemcachedClientImpl(String host, int port, String bucketName, String password,
+      [OPFactory factory])
+      : this.bucketName = bucketName,
+        this.password = password {
     _factory = factory != null ? factory : new TextOPFactory();
     _opQueue = new Queue();
     Socket.connect(host, port)
@@ -139,9 +142,6 @@ class _ClientImpl implements Client {
       //cannot close socket until opQueue is processed
       _toBeClose = true;
   }
-
-  void _close0()
-  => _socket.close();
 
   /** set command */
   Future<bool> set(String key, List<int> doc, [int cas])
@@ -284,7 +284,7 @@ op.seq = seq++;
     op.state = OPState.WRITING;
     List<int> cmd = op.cmd;
     print("write sockcet cmd: [${decodeUtf8(cmd)}]");
-    _socket.add(cmd);
+    _socket.add(cmd); //see setupResponseHandler
     op.state = OPState.READING; //wait socket.input.onData()
   }
 
@@ -299,6 +299,9 @@ op.seq = seq++;
         _currentOp.processResponse(pbuf);
     }, onDone: () => print("Socket closed!"));
   }
-}
 
-const int _FREQ = 0; //operation process timer frequency
+  void _close0() {
+    if (_socket != null)
+      _socket.close();
+  }
+}

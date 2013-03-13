@@ -7,7 +7,7 @@ import 'dart:utf';
 import 'package:unittest/unittest.dart';
 import 'package:rikulo_memcached/memcached.dart';
 
-void testTouch(Client client) {
+void testTouch(MemcachedClient client) {
   expect(client.set('key100', encodeUtf8('val100')), completion(isTrue));
   Future f1 = null; //touch expiration time to 2 seconds
   Future f2 = client.get('key100');
@@ -28,14 +28,14 @@ void testTouch(Client client) {
 
 void main() {
   group('TextTouchTest:', () {
-    Client client;
-    setUp(() => client = new Client('localhost'));
+    MemcachedClient client;
+    setUp(() => client = new MemcachedClient('localhost'));
     tearDown(() => client.close());
     test('TestTouch', () => testTouch(client));
   });
   group('BinaryTouchTest:', () {
-    Client client;
-    setUp(() => client = new Client('localhost'));
+    MemcachedClient client;
+    setUp(() => client = new MemcachedClient('localhost'));
     tearDown(() => client.close());
     test('TestTouch', () => testTouch(client));
   });

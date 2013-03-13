@@ -8,7 +8,7 @@ import 'package:unittest/unittest.dart';
 import 'package:rikulo_memcached/memcached.dart';
 
 //increment 1 by 5 to 6
-void testIncrement1(Client client) {
+void testIncrement1(MemcachedClient client) {
   expect(client.set('key0', encodeUtf8('1')), completion(isTrue));
 
   Future f1 = client.get('key0');
@@ -21,7 +21,7 @@ void testIncrement1(Client client) {
 }
 
 //increment v1 by 5 to 6; should throws Error
-void testIncrement2(Client client) {
+void testIncrement2(MemcachedClient client) {
   expect(client.set('key0', encodeUtf8('v1')), completion(isTrue));
 
   Future f1 = client.get('key0');
@@ -34,7 +34,7 @@ void testIncrement2(Client client) {
 }
 
 //decrement 10 by 4 to 6
-void testDecrement1(Client client) {
+void testDecrement1(MemcachedClient client) {
   expect(client.set('key0', encodeUtf8('10')), completion(isTrue));
 
   Future f1 = client.get('key0');
@@ -47,7 +47,7 @@ void testDecrement1(Client client) {
 }
 
 //decrement v10 by 4 to 6; should throws error.
-void testDecrement2(Client client) {
+void testDecrement2(MemcachedClient client) {
   expect(client.set('key0', encodeUtf8('v10')), completion(isTrue));
 
   Future f1 = client.get('key0');
@@ -61,8 +61,8 @@ void testDecrement2(Client client) {
 
 void main() {
   group('TextMutateTest:', () {
-    Client client;
-    setUp(() => client = new Client('localhost'));
+    MemcachedClient client;
+    setUp(() => client = new MemcachedClient('localhost'));
     tearDown(() => client.close());
     test('TestIncrement1', () => testIncrement1(client));
     test('TestIncrement2', () => testIncrement2(client));
@@ -71,8 +71,8 @@ void main() {
   });
 
   group('BinaryMutateTest:', () {
-    Client client;
-    setUp(() => client = new Client('localhost', factory: new BinaryOPFactory()));
+    MemcachedClient client;
+    setUp(() => client = new MemcachedClient('localhost', factory: new BinaryOPFactory()));
     tearDown(() => client.close());
     test('TestIncrement1', () => testIncrement1(client));
     test('TestIncrement2', () => testIncrement2(client));

@@ -144,3 +144,7 @@ int bytesToInt64(List<int> bytes, int start)
 const _MAGIC_REQ = 0x80; //request magic byte for binary packet of this version
 const _MAGIC_RES = 0x81; //response magic byte for binary packet of this version
 
+void copyList(List<int> src, int srci, List<int> dst, int dsti, int len) {
+  for (int j = 0; j < len; ++j)
+    dst[dsti + j] = src[srci + j];
+}

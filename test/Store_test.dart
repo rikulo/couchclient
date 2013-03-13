@@ -9,7 +9,7 @@ import 'package:unittest/unittest.dart';
 import 'package:rikulo_memcached/memcached.dart';
 
 //Unconditonal set key0
-void testSet1(Client client) {
+void testSet1(MemcachedClient client) {
   expect(client.set('key0', encodeUtf8('val0')), completion(isTrue));
 
   Future f1 = client.get('key0');
@@ -18,7 +18,7 @@ void testSet1(Client client) {
 }
 
 //Unconditional set no matter key0 exists or not
-void testSet2(Client client) {
+void testSet2(MemcachedClient client) {
   expect(client.set('key0', encodeUtf8('val1')), completion(isTrue));
   Future f1 = client.get('key0');
   f1.then((v) => expect(decodeUtf8(v.data), equals('val1')));
@@ -26,7 +26,7 @@ void testSet2(Client client) {
 }
 
 //unconditional set Chinese text
-void testSet3(Client client) {
+void testSet3(MemcachedClient client) {
   expect(client.set('key0', encodeUtf8('中文')), completion(isTrue));
   Future f1 = client.get('key0');
   f1.then((v) => expect(decodeUtf8(v.data), equals('中文')));
@@ -34,7 +34,7 @@ void testSet3(Client client) {
 }
 
 //cas with Chinese text
-void testCas(Client client) {
+void testCas(MemcachedClient client) {
   Future f1 = client.gets('key0');
   f1.then((v) {
     expect(decodeUtf8(v.data), equals('中文'));
@@ -45,13 +45,13 @@ void testCas(Client client) {
 }
 
 //key0 exist, cannot be added
-void testAdd1(Client client) {
+void testAdd1(MemcachedClient client) {
   expect(client.set('key0', encodeUtf8('val0')), completion(isTrue));
   expect(client.add('key0', encodeUtf8('val0')), throwsA(equals(OPStatus.KEY_EXISTS)));
 }
 
 //key1 not exist, can be added
-void testAdd2(Client client) {
+void testAdd2(MemcachedClient client) {
   expect(client.set('key1', encodeUtf8('val1')), completion(isTrue));
   //delete key1 to ensure Add will succeed
   expect(client.delete('key1'), completes);
@@ -67,7 +67,7 @@ void testAdd2(Client client) {
 }
 
 //key0 exist, can be replaced (val1 -> val0)
-void testReplace1(Client client) {
+void testReplace1(MemcachedClient client) {
   expect(client.replace('key0', encodeUtf8('val0')), completion(isTrue));
   Future f1 = client.get('key0');
   f1.then((v) => expect(decodeUtf8(v.data), equals('val0')));
@@ -75,12 +75,12 @@ void testReplace1(Client client) {
 }
 
 //key1 not exist, cannot replace
-void testReplace2(Client client) {
+void testReplace2(MemcachedClient client) {
   expect(client.replace('key1', encodeUtf8('val0')), throwsA(equals(OPStatus.KEY_NOT_FOUND)));
 }
 
 //key0 exist, can be prepend (val0 -> pre0val0)
-void testPrepend1(Client client) {
+void testPrepend1(MemcachedClient client) {
   expect(client.prepend('key0', encodeUtf8('pre0')), completion(isTrue));
   Future f1 = client.get('key0');
   f1.then((v) => expect(decodeUtf8(v.data), equals('pre0val0')));
@@ -88,12 +88,12 @@ void testPrepend1(Client client) {
 }
 
 //key1 not exist, cannot prepend
-void testPrepend2(Client client) {
+void testPrepend2(MemcachedClient client) {
   expect(client.prepend('key1', encodeUtf8('pre0')), throwsA(equals(OPStatus.ITEM_NOT_STORED)));
 }
 
 //key0 exist, can be append (pre0val0 -> pre0val0app0)
-void testAppend1(Client client) {
+void testAppend1(MemcachedClient client) {
   expect(client.append('key0', encodeUtf8('app0')), completion(isTrue));
   Future f1 = client.get('key0');
   f1.then((v) => expect(decodeUtf8(v.data), equals('pre0val0app0')));
@@ -101,14 +101,14 @@ void testAppend1(Client client) {
 }
 
 //key1 not exist, cannot append
-void testAppend2(Client client) {
+void testAppend2(MemcachedClient client) {
   expect(client.append('key1', encodeUtf8('pre0')), throwsA(equals(OPStatus.ITEM_NOT_STORED)));
 }
 
 void main() {
   group('TextStoreTest:', () {
-    Client client;
-    setUp(() => client = new Client('localhost'));
+    MemcachedClient client;
+    setUp(() => client = new MemcachedClient('localhost'));
     tearDown(() => client.close());
     test('TestSet1', () => testSet1(client));
     test('TestSet2', () => testSet2(client));
@@ -125,8 +125,8 @@ void main() {
   });
 
   group('BinaryStoreTest:', () {
-    Client client;
-    setUp(() => client = new Client('localhost', factory:new BinaryOPFactory()));
+    MemcachedClient client;
+    setUp(() => client = new MemcachedClient('localhost', factory:new BinaryOPFactory()));
     tearDown(() => client.close());
     test('TestSet1', () => testSet1(client));
     test('TestSet2', () => testSet2(client));

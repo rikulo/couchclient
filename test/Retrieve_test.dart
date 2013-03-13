@@ -8,7 +8,7 @@ import 'package:unittest/unittest.dart';
 import 'package:rikulo_memcached/memcached.dart';
 
 //get a key
-void testGet1(Client client) {
+void testGet1(MemcachedClient client) {
   expect(client.set('key0', encodeUtf8('val0')), completion(isTrue));
 
   Future f1 = client.get('key0');
@@ -20,12 +20,12 @@ void testGet1(Client client) {
 }
 
 //get an inexisting key
-void testGet2(Client client) {
+void testGet2(MemcachedClient client) {
   expect(client.get('key101'), throwsA(equals(OPStatus.KEY_NOT_FOUND)));
 }
 
 //get multiple key
-void testGetAll(Client client) {
+void testGetAll(MemcachedClient client) {
   int count = 20;
   for (int j = 0; j < count; ++j) {
     expect(client.set('key$j', encodeUtf8('val$j')), completion(isTrue));
@@ -54,7 +54,7 @@ void testGetAll(Client client) {
 }
 
 //gets a key; sould return with cas token.
-void testGets1(Client client) {
+void testGets1(MemcachedClient client) {
   expect(client.set('key0', encodeUtf8('val0')), completion(isTrue));
 
   Future f1 = client.gets('key0');
@@ -66,12 +66,12 @@ void testGets1(Client client) {
 }
 
 //gets an inexisting key
-void testGets2(Client client) {
+void testGets2(MemcachedClient client) {
   expect(client.gets('key101'), throwsA(equals(OPStatus.KEY_NOT_FOUND)));
 }
 
 //gets multiple key; should return with cas tokens.
-void testGetsAll(Client client) {
+void testGetsAll(MemcachedClient client) {
   int count = 20;
   for (int j = 0; j < count; ++j) {
     expect(client.set('key$j', encodeUtf8('val$j')), completion(isTrue));
@@ -100,8 +100,8 @@ void testGetsAll(Client client) {
 
 void main() {
   group('TextRetrieveTest:', () {
-    Client client;
-    setUp(() => client = new Client('localhost'));
+    MemcachedClient client;
+    setUp(() => client = new MemcachedClient('localhost'));
     tearDown(() => client.close());
     test('TestGet1', () => testGet1(client));
     test('TestGet2', () => testGet2(client));
@@ -112,8 +112,8 @@ void main() {
   });
 
   group('BinaryRetrieveTest:', () {
-    Client client;
-    setUp(() => client = new Client('localhost', factory: new BinaryOPFactory()));
+    MemcachedClient client;
+    setUp(() => client = new MemcachedClient('localhost', factory: new BinaryOPFactory()));
     tearDown(() => client.close());
     test('TestGet1', () => testGet1(client));
     test('TestGet2', () => testGet2(client));
