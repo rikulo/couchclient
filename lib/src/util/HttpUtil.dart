@@ -9,6 +9,7 @@ class HttpResult {
 }
 
 class HttpUtil {
+  static Logger _logger = initStaticLogger('couchbase.util.HttpUtil');
   static Future<HttpResult> uriDelete(HttpClient hc, Uri base, Uri resource,
       String usr, String pass, [Map<String, String> headers]) {
 
@@ -30,7 +31,7 @@ class HttpUtil {
       List<int> contents = new List();
       res.listen((bytes) => contents.add(bytes), //read response
         onDone : () => cmpl.complete(new HttpResult(status, headers, contents)), //done read response
-        onError: (err) => print("DELETE:$err")//fail to read response
+        onError: (err) => _logger.finest("DELETE:$err")//fail to read response
       );
     });
     return cmpl.future;
@@ -50,12 +51,12 @@ class HttpUtil {
       if (usr != null) {
         h.set(HttpHeaders.AUTHORIZATION, _buildAuthHeader(usr, pass));
       }
-      req.addString(value);
+      req.write(value);
       return req.close();
     }).then((res) {
       res.listen((bytes) => sb.write(decodeUtf8(bytes)), //read response
         onDone : () => cmpl.complete(sb.toString()), //done read response
-        onError: (err) => print("PUT:$err") //fail to read response
+        onError: (err) => _logger.finest("PUT:$err") //fail to read response
       );
     });
     return cmpl.future;
@@ -79,7 +80,7 @@ class HttpUtil {
     }).then((res) {
       res.listen((bytes) => sb.write(decodeUtf8(bytes)), //read response
         onDone : () => cmpl.complete(sb.toString()), //done read response
-        onError: (err) => print("GET:$err") //fail to read response
+        onError: (err) => _logger.finest("GET:$err") //fail to read response
       );
     });
     return cmpl.future;
@@ -88,7 +89,7 @@ class HttpUtil {
   static Future<HttpClientRequest> _httpGet(HttpClient hc, Uri base, Uri resource) {
     if (!resource.isAbsolute && base != null) {
       resource = base.resolveUri(resource);
-      print("GET $resource");
+      _logger.finest("GET $resource");
     }
     return hc.openUrl('GET', resource);
   }
@@ -96,7 +97,7 @@ class HttpUtil {
   static Future<HttpClientRequest> _httpPost(HttpClient hc, Uri base, Uri resource) {
     if (!resource.isAbsolute && base != null) {
       resource = base.resolveUri(resource);
-      print("POST $resource");
+      _logger.finest("POST $resource");
     }
     return hc.openUrl('POST', resource);
   }
@@ -104,7 +105,7 @@ class HttpUtil {
   static Future<HttpClientRequest> _httpPut(HttpClient hc, Uri base, Uri resource) {
     if (!resource.isAbsolute && base != null) {
       resource = base.resolveUri(resource);
-      print("PUT $resource");
+      _logger.finest("PUT $resource");
     }
     return hc.openUrl('PUT', resource);
   }
@@ -112,7 +113,7 @@ class HttpUtil {
   static Future<HttpClientRequest> _httpDelete(HttpClient hc, Uri base, Uri resource) {
     if (!resource.isAbsolute && base != null) {
       resource = base.resolveUri(resource);
-      print("DELETE $resource");
+      _logger.finest("DELETE $resource");
     }
     return hc.openUrl('DELETE', resource);
   }

@@ -22,177 +22,131 @@ class Query {
   static const String ONERROR = "on_error";
   static const String BBOX = "bbox";
   static const String DEBUG = "debug";
-  bool includedocs = false;
+  bool _includedocs = false;
 
-  Map<String, Object> _args;
+  final Map<String, Object> _args;
 
   /**
    * Creates a new Query object with default settings.
    */
-  Query() {
-    _args = new HashMap<String, Object>();
-  }
+  Query()
+      : _args = new HashMap<String, Object>();
 
   /**
-   * Read if reduce is enabled or not.
-   *
-   * @return Whether reduce is enabled or not.
+   * Returns whether reduce is enabled or not.
    */
   bool get willReduce
   => _args.containsKey(REDUCE) ? _args[REDUCE] : false;
 
   /**
-   * Read if full documents will be included on the query.
-   *
-   * @return Whether the full documents will be included or not.
+   * Returns whether the full documents will be included in the query
+   * results.
    */
-  bool get willIncludeDocs
-  => includedocs;
+  bool get includeDocs
+  => _includedocs;
 
   /**
-   * Return the documents in descending by key order.
-   *
-   * @param descending True if the sort-order should be descending.
-   * @return The Query instance.
+   * Sets query results in key descending order. true to return query
+   * results in key descending order; false to return query results
+   * in key ascending order.
    */
-  void setDescending(bool descending) {
+  void set descending(bool descending) {
     _args[DESCENDING] = descending;
   }
 
   /**
-   * Stop returning records when the specified document ID is reached.
-   *
-   * @param endkeydocid The document ID that should be used.
-   * @return The Query instance.
+   * Sets the end document id for this query.
    */
-  void setEndkeyDocID(String endkeydocid) {
+  void set endkeyDocID(String endkeydocid) {
     _args[ENDKEYDOCID] = endkeydocid;
   }
 
   /**
-   * Group the results using the reduce function to a group or single row.
-   *
-   * @param group True when grouping should be enabled.
-   * @return The Query instance.
+   * Sets whether to make query results into groups or a single row
+   * with reduce function. true to reduce into groups; otherwise to
+   * a single row.
    */
-  void setGroup(bool group) {
+  void set group(bool group) {
     _args[GROUP] = group;
   }
 
   /**
-   * Specify the group level to be used.
-   *
-   * @param grouplevel How deep the grouping level should be.
-   * @return The Query instance.
+   * Sets how deep the goruping level should be.
    */
-  void setGroupLevel(int grouplevel) {
+  void set groupLevel(int grouplevel) {
     _args[GROUPLEVEL] = grouplevel;
   }
 
   /**
-   * If the full documents should be included in the result.
-   *
-   * @param include True when the full docs should be included in the result.
-   * @return The Query instance.
+   * Sets true to include full documents in the query results.
+   * This implementation call client's getAll() for you so the
+   * performance is not necessary better.
    */
-  void setIncludeDocs(bool include) {
-    this.includedocs = include;
+  void set includeDocs(bool include) {
+    this._includedocs = include;
   }
 
   /**
-   * Specifies whether the specified end key should be included in the result.
-   *
-   * @param inclusiveend True when the key should be included.
-   * @return The Query instance.
+   * Sets true to specify that end key should be included in the query result.
    */
-  void setInclusiveEnd(bool inclusiveend) {
+  void set inclusiveEnd(bool inclusiveend) {
     _args[INCLUSIVEEND] = inclusiveend;
   }
 
   /**
-   * Return only documents that match the specified key.
-   *
-   * The "key" param must be specified as a valid JSON string, but the
-   * ComplexKey class takes care of this. See the documentation of the
-   * ComplexKey class for more information on its usage.
-   *
-   * @param key The document key.
-   * @return The Query instance.
+   * Sets the key to retrive the matched document; Noticed that this is a
+   * sugar API for you to set complex key if your key is not a simple
+   * String.
    */
-  void setComplexKey(ComplexKey key) {
+  void set complexKey(ComplexKey key) {
     _args[KEY] = key.toJson();
   }
 
   /**
-   * Return only documents that match the specified key.
-   *
-   * Note that the given key string has to be valid JSON!
-   *
-   * @param key The document key.
-   * @return The Query instance.
+   * Sets the key to retrive the matched document. If your key is a complex one,
+   * set complexKey instead.
    */
-  void setKey(String key) {
+  void set key(String key) {
     _args[KEY] = key;
   }
 
   /**
-   * Return only documents that match each of keys specified within the given
-   * array.
-   *
-   * The "keys" param must be specified as a valid JSON string, but the
-   * ComplexKey class takes care of this. See the documentation of the
-   * ComplexKey class for more information on its usage.
-   *
-   * Also, sorting is not applied when using this option.
-   *
-   * @param keys The document keys.
-   * @return The Query instance.
+   * Sets query to return documents that match each of keys
+   * specified. Noticed that this is a
+   * sugar API for you to set complex keys if your keys is not a simple
+   * list of Strings.
    */
-  void setKeys(ComplexKey keys) {
-    _args[KEYS] = keys.toJson();
+  void set complexKeys(List<ComplexKey> keys) {
+    List<String> results = new List(keys.length);
+    for(int j = 0; j < keys.length; ++j)
+      results[j] = keys[j].toJson();
+    _args[KEYS] = "[${results.join(',')}]";
   }
 
-//  /**
-//   * Return only documents that match each of keys specified within the given
-//   * array.
-//   *
-//   * Note that the given key string has to be valid JSON! Also, sorting is not
-//   * applied when using this option.
-//   *
-//   * @param keys The document keys.
-//   * @return The Query instance.
-//   */
-//  void setKeys(String keys) {
-//    _args.put(KEYS, keys);
-//    return this;
-//  }
+  /**
+   * Sets query to return documents that match each of keys specifiedReturn only documents that match each of keys specified within the given
+   * array.  If your keys are complex ones, set complexKeys instead.
+   */
+  void set keys(List<String> keys) {
+    _args[KEYS] = json.stringify(keys);
+  }
 
   /**
-   * Limit the number of the returned documents to the specified number.
-   *
-   * @param limit The number of documents to return.
-   * @return The Query instance.
+   * Set the number of the query results to the specified number.
    */
-  void setLimit(int limit) {
+  void set limit(int limit) {
     _args[LIMIT] = limit;
   }
 
   /**
    * Returns the currently set limit.
-   *
-   * @return The current limit (or -1 if none is set).
    */
   int get limit
   => _args.containsKey(LIMIT) ? _args[LIMIT] : -1;
 
   /**
-   * Returns records in the given key range.
-   *
-   * Note that the given key strings have to be valid JSON!
-   *
-   * @param startkey The start of the key range.
-   * @param endkey The end of the key range.
-   * @return The Query instance.
+   * Sets the key range of this query. If your keys are complex ones, use
+   * [setComplexRange] instead.
    */
   void setRange(String startkey, String endkey) {
     _args[ENDKEY] = endkey;
@@ -200,15 +154,8 @@ class Query {
   }
 
   /**
-   * Returns records in the given key range.
-   *
-   * The range keys must be specified as a valid JSON strings, but the
-   * ComplexKey class takes care of this. See the documentation of the
-   * ComplexKey class for more information on its usage.
-   *
-   * @param startkey The start of the key range.
-   * @param endkey The end of the key range.
-   * @return The Query instance.
+   * Sets the complex key range of this query. Noticed that this is a sugar
+   * API of [setRange] for complex keys.
    */
   void setComplexRange(ComplexKey startkey, ComplexKey endkey) {
     _args[ENDKEY] = endkey.toJson();
@@ -216,120 +163,86 @@ class Query {
   }
 
   /**
-   * Return records with a value equal to or greater than the specified key.
-   *
-   * Note that the given key string has to be valid JSON!
-   *
-   * @param startkey The start of the key range.
-   * @return The Query instance.
+   * Sets the start key of a range for this query. If your keys are complex
+   * ones, use [complexRangeStart] instead.
    */
-  void setRangeStart(String startkey) {
+  void set rangeStart(String startkey) {
     _args[STARTKEY] = startkey;
   }
 
   /**
-   * Return records with a value equal to or greater than the specified key.
-   *
-   * The range key must be specified as a valid JSON string, but the
-   * ComplexKey class takes care of this. See the documentation of the
-   * ComplexKey class for more information on its usage.
-   *
-   * @param startkey The start of the key range.
-   * @return The Query instance.
+   * Set the complex start key of range for this query. Noticed that this is
+   * a sugar API of [rangeStart] for complex key.
    */
-  void setComplexRangeStart(ComplexKey startkey) {
+  void set complexRangeStart(ComplexKey startkey) {
     _args[STARTKEY] = startkey.toJson();
   }
 
   /**
-   * Use the reduction function.
-   *
-   * @param reduce True if the reduce phase should also be executed.
-   * @return The Query instance.
+   * Set true to use the reduction function.
    */
-  void setReduce(bool reduce) {
+  void set reduce(bool reduce) {
     _args[REDUCE] = reduce;
   }
 
   /**
-   * Stop returning records when the specified key is reached.
-   *
-   * Note that the given key string has to be valid JSON!
-   *
-   * @param endkey The end of the key range.
-   * @return The Query instance.
+   * Sets the end key of a range for this query. If your keys are complex
+   * ones, use [complexRangeEnd] instead.
    */
-  void setRangeEnd(String endkey) {
+  void set rangeEnd(String endkey) {
     _args[ENDKEY] = endkey;
   }
 
   /**
-   * Stop returning records when the specified key is reached.
-   *
-   * The range key must be specified as a valid JSON string, but the
-   * ComplexKey class takes care of this. See the documentation of the
-   * ComplexKey class for more information on its usage.
-   *
-   * @param endkey The end of the key range.
-   * @return The Query instance.
+   * Set the complex end key of range for this query. Noticed that this is
+   * a sugar API of [rangeEnd] for complex key.
    */
- void setComplexRangeEnd(ComplexKey endkey) {
+  void set complexRangeEnd(ComplexKey endkey) {
     _args[ENDKEY] = endkey.toJson();
   }
 
   /**
-   * Skip this number of records before starting to return the results.
-   *
-   * @param docstoskip The number of records to skip.
-   * @return The Query instance.
+   * Set the number of records skipped before starting to return the results.
    */
- void setSkip(int docstoskip) {
+  void set skip(int docstoskip) {
     _args[SKIP] = docstoskip;
   }
 
   /**
-   * Allow the results from a stale view to be used.
+   * Set the "Stale" type for document re-indexing. Default setting
+   * is Stale.UPDATE_AFTER.
    *
-   * See the "Stale" enum for more information on the possible options. The
-   * default setting is "update_after"!
-   *
-   * @param stale Which stale mode should be used.
-   * @return The Query instance.
+   * + [Stale.OK] - Use current index for query without re-indexing first.
+   * + [Stale.FALSE] - re-indexing first if necessary; then query.
+   * + [Stale.UPDATE_AFTER] - Use current index for query and mark re-indexing
+   *   later.
    */
-  void setStale(Stale stale) {
+  void set stale(Stale stale) {
     _args[STALE] = stale;
   }
 
   /**
-   * Return records starting with the specified document ID.
-   *
-   * @param startkeydocid The document ID to match.
-   * @return The Query instance.
+   * Sets the start document id for this query.
    */
-  void setStartkeyDocID(String startkeydocid) {
+  void set startkeyDocID(String startkeydocid) {
     _args[STARTKEYDOCID] = startkeydocid;
   }
 
   /**
-   * Sets the response in the event of an error.
-   *
-   * See the "OnError" enum for more details on the available options.
-   *
-   * @param opt The appropriate error handling type.
-   * @return The Query instance.
+   * Sets the response type when error occured in this query. default
+   * is [OnErrorType.CONTINUE].
    */
-  void setOnErrorType(OnErrorType opt) {
+  void set onErrorType(OnErrorType opt) {
     _args[ONERROR] = opt;
   }
 
   /**
    * Sets the params for a spatial bounding box view query.
    *
-   * @param lowerLeftLong The longitude of the lower left corner.
-   * @param lowerLeftLat The latitude of the lower left corner.
-   * @param upperRightLong The longitude of the upper right corner.
-   * @param upperRightLat The latitude of the upper right corner.
-   * @return The Query instance.
+   * + [lowerLeftLong] -  The longitude of the lower left corner.
+   * + [lowerLeftLat] - The latitude of the lower left corner.
+   * + [upperRightLong] - The longitude of the upper right corner.
+   * + [upperRightLat] - The latitude of the upper right corner.
    */
   void setBbox(double lowerLeftLong, double lowerLeftLat,
     double upperRightLong, double upperRightLat) {
@@ -339,86 +252,77 @@ class Query {
   }
 
   /**
-   * Enabled debugging on view queries.
-   *
-   * @param debug True when debugging should be enabled.
-   * @return The Query instance.
+   * Set true to enabled debugging on view queries.
    */
-  void setDebug(bool debug) {
+  void set debug(bool debug) {
     _args[DEBUG] = debug;
   }
 
   /**
-   * Creates a new query instance and returns it with the properties
-   * bound to the current object.
-   *
-   * @return The new Query object.
+   * Creates and return a new query instance with the same properties
+   * bound to this query.
    */
-  Query copy() {
+  Query clone() {
     Query query = new Query();
 
     if (_args.containsKey(DESCENDING)) {
-      query.setDescending(_args[DESCENDING]);
+      query.descending = _args[DESCENDING];
     }
     if (_args.containsKey(ENDKEY)) {
-      query.setRangeEnd(_args[ENDKEY]);
+      query.rangeEnd = _args[ENDKEY];
     }
     if (_args.containsKey(ENDKEYDOCID)) {
-      query.setEndkeyDocID(_args[ENDKEYDOCID]);
+      query.endkeyDocID = _args[ENDKEYDOCID];
     }
     if (_args.containsKey(GROUP)) {
-      query.setGroup(_args[GROUP]);
+      query.group = _args[GROUP];
     }
     if (_args.containsKey(GROUPLEVEL)) {
-      query.setGroupLevel(_args[GROUPLEVEL]);
+      query.groupLevel = _args[GROUPLEVEL];
     }
     if (_args.containsKey(INCLUSIVEEND)) {
-      query.setInclusiveEnd(_args[INCLUSIVEEND]);
+      query.inclusiveEnd = _args[INCLUSIVEEND];
     }
     if (_args.containsKey(KEY)) {
-      query.setKey(_args[KEY]);
+      query.key = _args[KEY];
     }
     if (_args.containsKey(KEYS)) {
-      query.setKeys(_args[KEYS]);
+      query.keys = _args[KEYS];
     }
     if (_args.containsKey(LIMIT)) {
-      query.setLimit(_args[LIMIT]);
+      query.limit = _args[LIMIT];
     }
     if (_args.containsKey(REDUCE)) {
-      query.setReduce(_args[REDUCE]);
+      query.reduce = _args[REDUCE];
     }
     if (_args.containsKey(SKIP)) {
-      query.setSkip(_args[SKIP]);
+      query.skip = _args[SKIP];
     }
     if (_args.containsKey(STALE)) {
-      query.setStale(_args[STALE]);
+      query.stale = _args[STALE];
     }
     if (_args.containsKey(STARTKEY)) {
-      query.setRangeStart(_args[STARTKEY]);
+      query.rangeStart = _args[STARTKEY];
     }
     if (_args.containsKey(STARTKEYDOCID)) {
-      query.setStartkeyDocID(_args[STARTKEYDOCID]);
+      query.startkeyDocID = _args[STARTKEYDOCID];
     }
     if (_args.containsKey(ONERROR)) {
-      query.setOnErrorType(_args[ONERROR]);
+      query.onErrorType = _args[ONERROR];
     }
     if (_args.containsKey(BBOX)) {
-      List<String> bbox = (_args[BBOX] as String).split(",");
-      query.setBbox(double.parse(bbox[0]), double.parse(bbox[1]),
-        double.parse(bbox[2]), double.parse(bbox[3]));
+      query._args[BBOX] = _args[BBOX];
     }
     if (_args.containsKey(DEBUG)) {
-      query.setDebug(_args[DEBUG]);
+      query.debug = _args[DEBUG];
     }
-    query.setIncludeDocs(willIncludeDocs);
+    query.includeDocs = includeDocs;
 
     return query;
   }
 
   /**
    * Returns the Query object as a string, suitable for the HTTP queries.
-   *
-   * @return Returns the query object as its string representation
    */
   //@Override
   String toString() {
@@ -433,7 +337,7 @@ class Query {
       }
       String argument;
       try {
-        argument = "$key=${prepareValue(key, _args[key])}";
+        argument = "$key=${_prepareValue(key, _args[key])}";
       } catch (ex) {
         throw new ArgumentError("Could not prepare view argument: $ex");
       }
@@ -455,11 +359,10 @@ class Query {
    * long value and treat it as a numeric value. If this doesn't succeed
    * either, then it is treated as a string.
    *
-   * @param key The key for the corresponding value.
-   * @param value The value to prepared.
-   * @return The correctly formatted and encoded value.
+   * + [key] - The key for the corresponding value.
+   * + [value] - The value to prepared.
    */
-  String prepareValue(String key, dynamic value) {
+  String _prepareValue(String key, dynamic value) {
     String encoded;
     if (key == STARTKEYDOCID || key == BBOX) {
       encoded = value;
@@ -494,9 +397,8 @@ class Query {
    *
    * @return returns the currently stored arguments
    */
-  Map<String, Object> get args {
-    return _args;
-  }
+  Map<String, Object> get args
+  => _args;
 
   static bool _isJsonObject(String s) {
     if (s.startsWith("{") || s.startsWith("[") || s == "true"

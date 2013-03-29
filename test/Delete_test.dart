@@ -4,8 +4,10 @@
 
 import 'dart:async';
 import 'dart:utf';
+import 'package:logging/logging.dart';
 import 'package:unittest/unittest.dart';
 import 'package:rikulo_memcached/memcached.dart';
+import 'MemcachedTestUtil.dart' as m;
 
 //delete key3
 void testDelete1(MemcachedClient client) {
@@ -19,16 +21,17 @@ void testDelete2(MemcachedClient client) {
 }
 
 void main() {
+  setupLogger(level: Level.ALL);
   group('TextDeleteTest:', () {
     MemcachedClient client;
-    setUp(() => client = new MemcachedClient('localhost'));
+    setUp(() => m.prepareTextClient().then((c) => client = c));
     tearDown(() => client.close());
     test('TestDelete1', () => testDelete1(client));
     test('TestDelete2', () => testDelete2(client));
   });
   group('BinaryDeleteTest:', () {
     MemcachedClient client;
-    setUp(() => client = new MemcachedClient('localhost', factory: new BinaryOPFactory()));
+    setUp(() => m.prepareBinaryClient().then((c) => client = c));
     tearDown(() => client.close());
     test('TestDelete1', () => testDelete1(client));
     test('TestDelete2', () => testDelete2(client));

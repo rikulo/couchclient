@@ -4,24 +4,48 @@
 
 part of rikulo_memcached;
 
-class TextOPFactory implements OPFactory {
-  DeleteOP newDeleteOP(String key, [int msecs = _TIMEOUT])
-  => new TextDeleteOP(key, msecs);
+abstract class TextOPFactory implements OPFactory {
+  //Singleton
+  static final TextOPFactory _textOPFactory = new _TextOPFactoryImpl();
+  factory TextOPFactory()
+  => _textOPFactory;
+}
 
-  GetOP newGetOP(OPType type, List<String> keys, [int msecs = _TIMEOUT])
-  => new TextGetOP(type, keys, msecs);
+class _TextOPFactoryImpl implements TextOPFactory {
+  DeleteOP newDeleteOP(String key)
+  => new TextDeleteOP(key);
 
-  MutateOP newMutateOP(OPType type, String key, int value, [int msecs = _TIMEOUT])
-  => new TextMutateOP(type, key, value, msecs);
+  GetOP newGetOP(OPType type, List<String> keys)
+  => new TextGetOP(type, keys);
+
+  GetSingleOP newGetSingleOP(OPType type, String key)
+  => new TextGetSingleOP(type, key);
+
+  MutateOP newMutateOP(OPType type, String key, int value)
+  => new TextMutateOP(type, key, value);
 
   StoreOP newStoreOP(OPType type, String key, int flags, int exp, List<int> doc,
-                     [int cas, int msecs = _TIMEOUT])
-  => new TextStoreOP(cas != null ? OPType.cas : type, key, flags, exp, doc, cas, msecs);
+                     {int cas})
+  => new TextStoreOP(cas != null ? OPType.cas : type, key, flags, exp, doc, cas);
 
-  TouchOP newTouchOP(String key, int exp, [int msecs = _TIMEOUT])
-  => new TextTouchOP(key, exp, msecs);
+  TouchOP newTouchOP(String key, int exp)
+  => new TextTouchOP(key, exp);
 
-  VersionOP newVersionOP([int msecs = _TIMEOUT])
-  => new TextVersionOP(msecs);
+  VersionOP newVersionOP()
+  => new TextVersionOP();
+
+  //Sasl OPs
+  SaslMechsOP newSaslMechsOP() {
+    throw new UnsupportedError("SaslMechs does not work with text protocol");
+  }
+
+  SaslAuthOP newSaslAuthOP(String mechanism, List<int> authData,
+                           {int retry : -1}) {
+    throw new UnsupportedError("SaslAuth does not work with text protocol");
+  }
+
+  SaslStepOP newSaslStepOP(String mechanism, List<int> challenge) {
+    throw new UnsupportedError("SaslStep does not work with text protocol");
+  }
 }
 

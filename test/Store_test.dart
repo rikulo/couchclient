@@ -7,6 +7,7 @@ import 'dart:utf';
 import 'dart:scalarlist';
 import 'package:unittest/unittest.dart';
 import 'package:rikulo_memcached/memcached.dart';
+import 'MemcachedTestUtil.dart' as m;
 
 //Unconditonal set key0
 void testSet1(MemcachedClient client) {
@@ -106,9 +107,10 @@ void testAppend2(MemcachedClient client) {
 }
 
 void main() {
+  setupLogger();
   group('TextStoreTest:', () {
     MemcachedClient client;
-    setUp(() => client = new MemcachedClient('localhost'));
+    setUp(() => m.prepareTextClient().then((c) => client = c));
     tearDown(() => client.close());
     test('TestSet1', () => testSet1(client));
     test('TestSet2', () => testSet2(client));
@@ -126,7 +128,7 @@ void main() {
 
   group('BinaryStoreTest:', () {
     MemcachedClient client;
-    setUp(() => client = new MemcachedClient('localhost', factory:new BinaryOPFactory()));
+    setUp(() => m.prepareBinaryClient().then((c) => client = c));
     tearDown(() => client.close());
     test('TestSet1', () => testSet1(client));
     test('TestSet2', () => testSet2(client));

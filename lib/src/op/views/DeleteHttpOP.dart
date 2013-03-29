@@ -5,9 +5,6 @@
 part of rikulo_memcached;
 
 abstract class DeleteHttpOP extends HttpOP {
-  DeleteHttpOP(int msecs)
-    : super(msecs);
-
   Future<String> handleCommand(HttpClient hc, Uri baseUri, Uri cmd,
         String user, String pass, [String value]) {
     Completer<String> cmpl = new Completer();

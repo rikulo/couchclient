@@ -7,24 +7,25 @@ import 'dart:uri';
 import 'dart:utf';
 import 'package:unittest/unittest.dart';
 import 'package:rikulo_memcached/memcached.dart';
+import 'CouchbaseTestUtil.dart' as cc;
 
 //test getDesignDocOP
 void testGetDesignDocOP0(CouchClient client, String designDocName) {
   expect(client.getDesignDoc(designDocName), completion(isNotNull));
 }
 
-String REST_USER = 'Administrator';
-String REST_PWD = 'password';
-String DEFAULT_BUCKET_NAME = 'default';
+void testGetDesignDocOP1(CouchClient client, String designDocName) {
+  expect(client.getDesignDoc(designDocName), completion(isNull));
+}
 
 void main() {
+  setupLogger();
   group('GetDesignDocOPTest:', () {
     CouchClient client;
-    List<Uri> baseList = new List();
-    setUp(() => client = new CouchClient('localhost', port: 8092, bucket: 'beer-sample'));
+    setUp(() => cc.prepareCouchClient().then((c) => client = c));
     tearDown(() => client.close());
     test('TestGetDesignDocOP0', () => testGetDesignDocOP0(client, 'beer'));
-//    test('TestGetBucketConfig', () => testGetBucketConfig(provider));
+    test('TestGetDesignDocOP1', () => testGetDesignDocOP1(client, 'noSuchDoc'));
   });
 }
 

@@ -7,9 +7,8 @@ class BinaryVersionOP extends BinaryOP implements VersionOP {
   Future<String> get future
   => _cmpl.future;
 
-  BinaryVersionOP([int msecs = _TIMEOUT])
-      : _cmpl = new Completer(),
-        super(msecs) {
+  BinaryVersionOP()
+      : _cmpl = new Completer() {
     _cmd = _prepareVersionCommand();
   }
 

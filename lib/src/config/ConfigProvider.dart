@@ -10,6 +10,7 @@ class ConfigProvider {
 
   static const String CLIENT_SPEC_VER = '1.0';
 
+  Logger _logger;
   List<Uri> baseList;
   String restUsr;
   String restPwd;
@@ -23,7 +24,10 @@ class ConfigProvider {
   ConfigProvider(List<Uri> baseList, [String user, String pass])
         : this.baseList = baseList,
           restUsr = user,
-          restPwd = pass;
+          restPwd = pass {
+
+    _logger = initLogger('couchbase.config', this);
+  }
 
   Future<Bucket> getBucketConfig(String bucketname) {
     if (bucketname == null || bucketname.trim().isEmpty)
@@ -138,7 +142,7 @@ class ConfigProvider {
         for (Pool pool in poolMap.values) {
           Future<String> fpoolstr = _readUri(baseUri, pool.uri, restUsr, restPwd);
           Future<Pool> fpool = fpoolstr.then((poolstr) {
-            print("poolstr:-------->[$poolstr]");
+            _logger.finest("pool->$poolstr");
             configParser.loadPool(pool, poolstr);
             return pool;
           });
@@ -151,7 +155,7 @@ class ConfigProvider {
         doneLoadBasic.then((List<Pool> pools) {
           List<Future<Pool>> bucketsfs = new List();
           for (Pool pool in pools) {
-            print("pool.bucketsUri---->[${pool.bucketsUri}]");
+            _logger.finest("pool.bucketsUri->${pool.bucketsUri}");
             Future<String> fbucketsStr = _readUri(baseUri, pool.bucketsUri, restUsr, restPwd);
             Future<Pool> fpool = fbucketsStr.then((bucketsStr) {
               Map<String, Bucket> bucketsForPool =

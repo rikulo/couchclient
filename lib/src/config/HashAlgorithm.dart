@@ -10,9 +10,10 @@ final int FNV_64_INIT = 0xcbf29ce484222325;
 final int FNV_64_PRIME = 0x100000001b3;
 final int FNV_32_INIT = 2166136261;
 final int FNV_32_PRIME = 16777619;
+Hash md5Digest = null;
 
 //key.hashCode
-final HashAlgorithm NATIVE_HASH  = (String key)
+final HashAlgorithm NATIVE_HASH = (String key)
 => key.hashCode & 0xffffffff;
 
 //(crc32(shift) >> 16) & 0x7fff;
@@ -60,15 +61,19 @@ final HashAlgorithm FNV1A_32_HASH = (String key) {
 };
 
 final HashAlgorithm KETAMA_HASH = (String key) {
-  MD5 md5 = new MD5();
-  md5.add(encodeUtf8(key));
-  List<int> bkey = md5.close();
+  List<int> bkey = computeMd5(key);
   int rv = ((bkey[3] & 0xff) << 24)
       | ((bkey[2] & 0xff) << 16)
       | ((bkey[1] & 0xff) << 8)
       | (bkey[0] & 0xff);
   return rv & 0xffffffff;
 };
+
+List<int> computeMd5(String key) {
+  MD5 md5 = new MD5();
+  md5.add(encodeUtf8(key));
+  return md5.close();
+}
 
 List<int> _crc32_table;
 int _crc32(List<int> buf) {
@@ -102,3 +107,4 @@ HashAlgorithm lookupHashAlgorithm(String name) {
   }
   return _algorithmMap[name];
 }
+

@@ -21,6 +21,8 @@ abstract class Config {
 
   ConfigType get configType;
 
+  String getServer(int serverIndex);
+
   int getVbucketByKey(String key);
 
   int getMaster(int vbucketIndex);

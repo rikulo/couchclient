@@ -1,7 +1,7 @@
 part of rikulo_memcached;
 
 /**
- * An enum containing the two possible values for the stale
+ * An enum containing the possible values for the stale
  * parameter.
  */
 class Stale extends Enum {

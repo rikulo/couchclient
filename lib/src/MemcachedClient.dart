@@ -1,10 +1,56 @@
 part of rikulo_memcached;
 
+/**
+ * Client to a memcached cluster servers.
+ *
+ * '''Basic usage'''
+ *
+ *     Future<MemcachedClient> future = MemcachedClient.connect(
+ *       [new SocketAddress(host1,port1), new SocketAddress(host2,port2), ...],
+ *       new BinaryConnectionFactory());
+ *
+ *     // Store a value (async) for one hour
+ *     future
+ *      .then((c) => c.set("someKey", someObject))
+ *      .then((ok) => print("done"));
+ *
+ *     // Retrieve a value.
+ *     future
+ *      .then((c) => c.get("someKey"))
+ *      .then((myObject) => print("$myObject"));
+ */
 abstract class MemcachedClient {
+  /**
+   * Maximum supported key length.
+   */
+  static const int MAX_KEY_LENGTH = 250;
+
+  /**
+   * Returns those servers that are currently active and respond to commands.
+   */
+  List<SocketAddress> get availableServers;
+
+  /**
+   * Returns those servers that are currently not active and cannot respond
+   * to commands.
+   */
+  List<SocketAddress> get unavailableServers;
+
+  /**
+   * Returns default Transcoder used with this MemcachedClient.
+   */
+//  Transcoder get transcoder;
+
+  /**
+   * Returns the locator of the server nodes in the cluster.
+   */
+  NodeLocator get locator;
 
   /**
    * Set unconditinally the specified document. Returns
    * true if succeed; throw Error status otherwise.
+   *
+   * + [key] - the key of the document
    */
   Future<bool> set(String key, List<int> document, [int cas]);
 
@@ -20,21 +66,21 @@ abstract class MemcachedClient {
    * array. Returns true if succeed; otherwise, throw
    * OPStatus.NOT_STORED or other Error status.
    */
-  Future<bool> replace(String key, List<int> document);
+  Future<bool> replace(String key, List<int> document, [int cas]);
 
   /**
    * Prepend byte array in front of the existing document of the provided key.
    * Returns true if succeed; otherwise, throw OPStatus.NOT_STORED or
    * other Error status.
    */
-  Future<bool> prepend(String key, List<int> prepend);
+  Future<bool> prepend(String key, List<int> prepend, [int cas]);
 
   /**
    * append byte array at the rear of the existing document of the provided key.
    * Returns true if succeed; otherwise, throw OPStatus.NOT_STORED or
    * other Error status.
    */
-  Future<bool> append(String key, List<int> document);
+  Future<bool> append(String key, List<int> document, [int cas]);
 
   /**
    * Delete the specified key; return true if succeed. Otherwise,
@@ -96,52 +142,90 @@ abstract class MemcachedClient {
   Future<bool> touch(String key, int exptime);
 
   /**
-   * Returns the version of the connected server. Returns version as a String.
+   * Returns the versions of the connected servers. Returns version as a String.
    */
-  Future<String> version();
+  Future<Map<SocketAddress, String>> versions();
+
+  /**
+   * Returns the set of supported SASL authentication mechanisms.
+   */
+  Future<Set<String>> listSaslMechs();
 
   /**
    * Close this memcached client.
    */
   void close();
 
-  factory MemcachedClient(String host, {int port:11211, String bucket:'default', String password, OPFactory factory})
-  => new _MemcachedClientImpl(host, port, bucket, password, factory);
-
+  /**
+   * Create and connect to a cluster of servers per the specified server
+   * addresses and connection factory.
+   */
+  static Future<MemcachedClient> connect(
+      List<SocketAddress> saddrs,
+      [ConnectionFactory factory])
+  => _MemcachedClientImpl.connect(saddrs, factory);
 }
 
 class _MemcachedClientImpl implements MemcachedClient {
-  Socket _socket;
-  bool connected = false;
-  Queue<OP> _opQueue;
-  bool _toBeClose = false;
-  OP _currentOp;
-  int seq = 0;
-  OPFactory _factory;
-  final String bucketName;
-  final String password;
+  final ConnectionFactory _connFactory;
+//  final Transcoder _transcoder;
+  final OPFactory _opFactory;
+  final MemcachedConnection _memcachedConn;
+  final AuthDescriptor _authDescriptor;
+  final int _opTimeout;
 
-  _MemcachedClientImpl(String host, int port, String bucketName, String password,
-      [OPFactory factory])
-      : this.bucketName = bucketName,
-        this.password = password {
-    _factory = factory != null ? factory : new TextOPFactory();
-    _opQueue = new Queue();
-    Socket.connect(host, port)
-          .then((Socket socket) {
-            _socket = socket;
-            setupResponseHandler();
-            connected = true;
-          });
+  Logger _logger;
+  bool _closing = false;
+
+  static Future<MemcachedClient> connect(
+      List<SocketAddress> saddrs,
+      [ConnectionFactory factory]) {
+    if (saddrs == null || saddrs.isEmpty)
+      throw new ArgumentError("Need at least one server to connect to: $saddrs");
+    if (factory == null)
+      factory = new BinaryConnectionFactory();
+    return factory.createConnection(saddrs)
+      .then((conn) => new _MemcachedClientImpl(conn, factory));
   }
 
-  void close() {
-    if (_opQueue.isEmpty)
-      _close0();
-    else
-      //cannot close socket until opQueue is processed
-      _toBeClose = true;
+  _MemcachedClientImpl(
+      MemcachedConnection memcachedConn,
+      ConnectionFactory connFactory)
+      : _memcachedConn = memcachedConn,
+        _connFactory = connFactory,
+        _opFactory = connFactory.opFactory,
+//        _transcoder = connFactory.transcorder,
+        _opTimeout = connFactory.opTimeout,
+        _authDescriptor = connFactory.authDescriptor {
+    _logger = initLogger('memcached', this);
   }
+
+  /**
+   * Returns the addresses of available servers at this moment.
+   */
+  List<SocketAddress> get availableServers {
+    List<SocketAddress> rv = new List();
+    for (MemcachedNode node in locator.allNodes) {
+      if (node.isActive)
+        rv.add(node.socketAddress);
+    }
+    return rv;
+  }
+
+  /**
+   * Returns the address of unavailable servers at this moment.
+   */
+  List<SocketAddress> get unavailableServers {
+    List<SocketAddress> rv = new List();
+    for (MemcachedNode node in locator.allNodes) {
+      if (!node.isActive)
+        rv.add(node.socketAddress);
+    }
+    return rv;
+  }
+
+  NodeLocator get locator
+  => _memcachedConn.locator;
 
   /** set command */
   Future<bool> set(String key, List<int> doc, [int cas])
@@ -152,156 +236,188 @@ class _MemcachedClientImpl implements MemcachedClient {
   => _store(OPType.add, key, 0, 0, doc);
 
   /** replace command */
-  Future<bool> replace(String key, List<int> doc)
-  => _store(OPType.replace, key, 0, 0, doc);
+  Future<bool> replace(String key, List<int> doc, [int cas])
+  => _store(OPType.replace, key, 0, 0, doc, cas);
 
   /** prepend command */
-  Future<bool> prepend(String key, List<int> doc)
-  => _store(OPType.prepend, key, 0, 0, doc);
+  Future<bool> prepend(String key, List<int> doc, [int cas])
+  => _store(OPType.prepend, key, 0, 0, doc, cas);
 
   /** append command */
-  Future<bool> append(String key, List<int> doc)
-  => _store(OPType.append, key, 0, 0, doc);
-
-  Future<bool> _store(OPType type, String key, int flags, int exp, List<int> doc, [int cas, bool noreply]) {
-    StoreOP op = _factory.newStoreOP(type, key, flags, exp, doc, cas);
-    _handleOperation(op);
-    return op.future;
-  }
+  Future<bool> append(String key, List<int> doc, [int cas])
+  => _store(OPType.append, key, 0, 0, doc, cas);
 
   /** touch command */
   Future<bool> touch(String key, int exp, [bool noreply]) {
-    TouchOP op = _factory.newTouchOP(key, exp);
-    _handleOperation(op);
+    TouchOP op = _opFactory.newTouchOP(key, exp);
+    _handleOperation(key, op);
     return op.future;
   }
 
   /** delete command */
   Future<bool> delete(String key) {
-    DeleteOP op = _factory.newDeleteOP(key);
-    _handleOperation(op);
+    DeleteOP op = _opFactory.newDeleteOP(key);
+    _handleOperation(key, op);
     return op.future;
   }
 
   /** increment command */
   Future<int> increment(String key, int value) {
-    MutateOP op = _factory.newMutateOP(OPType.incr, key, value);
-    _handleOperation(op);
+    MutateOP op = _opFactory.newMutateOP(OPType.incr, key, value);
+    _handleOperation(key, op);
     return op.future;
   }
 
   /** decrement command */
   Future<int> decrement(String key, int value) {
-    MutateOP op = _factory.newMutateOP(OPType.decr, key, value);
-    _handleOperation(op);
+    MutateOP op = _opFactory.newMutateOP(OPType.decr, key, value);
+    _handleOperation(key, op);
     return op.future;
   }
 
-  /** version command */
-  Future<String> version() {
-    VersionOP op = _factory.newVersionOP();
-    _handleOperation(op);
-    return op.future;
-  }
+  /** versions command */
+  Future<Map<SocketAddress, String>> versions()
+  => _handleBroadcastOperation(() => _opFactory.newVersionOP());
 
   /** get command */
-  Future<GetResult> get(String key)
-  => getAll([key]).first
-                  .catchError((err) => throw OPStatus.KEY_NOT_FOUND);
+  Future<GetResult> get(String key) {
+    GetSingleOP op = _opFactory.newGetSingleOP(OPType.get, key);
+    _handleOperation(key, op);
+    return op.future;
+  }
 
   /** get command with multiple keys */
-  Stream<GetResult> getAll(List<String> keys) {
-    GetOP op = _factory.newGetOP(OPType.get, keys);
-    _handleOperation(op);
-    return op.stream;
-  }
+  Stream<GetResult> getAll(List<String> keys)
+  => _retrieveAll(OPType.get, keys);
 
   /** gets(with cas data version token) command */
-  Future<GetResult> gets(String key)
-  => getsAll([key]).first
-                   .catchError((err) => throw OPStatus.KEY_NOT_FOUND);
+  Future<GetResult> gets(String key) {
+    GetSingleOP op = _opFactory.newGetSingleOP(OPType.gets, key);
+    _handleOperation(key, op);
+    return op.future;
+  }
 
   /** gets(with cas data version token) command with multiple keys */
-  Stream<GetResult> getsAll(List<String> keys) {
-    GetOP op = _factory.newGetOP(OPType.gets, keys);
-    _handleOperation(op);
-    return op.stream;
+  Stream<GetResult> getsAll(List<String> keys)
+  => _retrieveAll(OPType.gets, keys);
+
+  Future<Set<String>> listSaslMechs() {
+    Completer<Set<String>> cmpl = new Completer();
+    _handleBroadcastOperation(() => _opFactory.newSaslMechsOP())
+    .then((map) {
+      HashSet<String> set = new HashSet();
+      for(List<String> mechs in map.values)
+        set.addAll(mechs);
+      cmpl.complete(set);
+    });
+    return cmpl.future;
   }
 
-  //enque operation into queue and kick start process if necessary
-  void _handleOperation(OP op) {
-    if (_toBeClose)
-      throw new StateError("The client has been closed; no way to access the database.");
+  Future<bool> _store(OPType type, String key, int flags, int exp, List<int> doc, [int cas, bool noreply]) {
+    StoreOP op = _opFactory.newStoreOP(type, key, flags, exp, doc, cas:cas);
+    _handleOperation(key, op);
+    return op.future;
+  }
 
-//TODO: for debug only
-op.seq = seq++;
-    if (_opQueue.isEmpty) { // 0 -> 1, new a Timer as Operation process loop
-      new Timer.repeating(new Duration(milliseconds:_FREQ), (Timer t) {
-        print("Repeating timer\n");
-        if (connected && process()) { //no more operation, cancel the Timer
-          t.cancel();
-          if (_toBeClose)
-            _close0();
+  Stream<GetResult> _retrieveAll(OPType opCode, List<String> keys) {
+    //break gets into groups of key
+    final Map<MemcachedNode, List<String>> chunks = new HashMap();
+    NodeLocator l = locator;
+    bool binary = _opFactory is BinaryOPFactory;
+    for (String key in keys) {
+      validateKey(key, binary);
+      MemcachedNode primary = l.getPrimary(key);
+      MemcachedNode node = null;
+      if (primary.isActive)
+        node = primary;
+      else {
+        Iterator<MemcachedNode> i = l.getSequence(key);
+        while( node == null && i.moveNext()) {
+          MemcachedNode n = i.current;
+          if (n.isActive)
+            node = n;
         }
-      });
+        if (node == null)
+          node = primary;
+      }
+      List<String> ks = chunks[node];
+      if (ks == null) {
+        ks = new List();
+        chunks[node] = ks;
+      }
+      ks.add(key);
     }
-    _opQueue.add(op);
-//    setupTimer();
+
+    //resync results in key sequence
+    StreamController<GetResult> tgt = new StreamController();
+    int keyi = 0; //key sequence index
+    String currentKey = keys[0]; //the key should be add to Stream in sequence
+    Map<String, GetResult> tmpMap = new HashMap(); //temporary map for out of sequence results
+    for (MemcachedNode node in chunks.keys) {
+      GetOP op = _opFactory.newGetOP(opCode, chunks[node]);
+      _handleOperationAtNode(node, op);
+      Stream<GetResult> src = op.stream;
+      src.listen(
+        (getr) {
+          if (getr.key == currentKey) { //match the current key
+            do {
+              tgt.add(getr);
+              //try next key; might have been stored in tmpMap
+              ++keyi;
+              if (keyi < keys.length) {
+                currentKey = keys[keyi];
+                getr = tmpMap.remove(currentKey);
+              } else
+                getr = null;
+            } while(getr != null && getr.key == currentKey);
+          } else //not match the current key; store it in tmpMap for later use
+            tmpMap[getr.key] = getr;
+        },
+        onError: (err) => tgt.addError(err),
+        onDone: () => tgt.close()
+      );
+    }
+    return tgt.stream;
   }
 
-//  Timer _timer;
-//  void setupTimer() {
-//    if (_timer == null) {
-//      _timer = Timer.run(() {
-//        _timer.cancel();
-//        _timer = null;
-//        //_socket not ready yet or still operation to process, setup timer again!
-//        if (!connected) {
-//          print("Wait socket connect!");
-//          setupTimer();
-//        } else if (!process()) {
-//          print("Still operation to go!");
-//          setupTimer();
-//        }
-//      });
-//    }
-//  }
+  void _handleOperation(String key, OP op) {
+    _memcachedConn.addOP(key, op);
+  }
 
-  //process Operation in queue; return true to indicate no opeartion to process
-  bool process() {
-    if (_currentOp == null || _currentOp.state == OPState.COMPLETE) { //previous operation is complete
-      if (!_opQueue.isEmpty) {
-        _currentOp = _opQueue.removeFirst();
-        _process0();
+  void _handleOperationAtNode(MemcachedNode node, OP op) {
+    _memcachedConn.addOPToNode(node, op);
+  }
+
+  Future<Map<SocketAddress, dynamic>> _handleBroadcastOperation(OP newOP())
+  => _memcachedConn.broadcastOP(newOP, locator.allNodes);
+
+  void close() {
+    if (_closing)
+      return;
+    _closing = true;
+    _memcachedConn.close();
+  }
+}
+
+/** Key validation */
+void validateKey(String key, bool binary) {
+  List<int> keyBytes = encodeUtf8(key);
+  if (keyBytes.length > MemcachedClient.MAX_KEY_LENGTH) {
+    throw new ArgumentError("Key is too long (maxlen = "
+        "${MemcachedClient.MAX_KEY_LENGTH})");
+  }
+  if (keyBytes.length == 0) {
+    throw new ArgumentError(
+        "Key must contain at least one character.");
+  }
+  if(!binary) {
+    // Validate the key
+    for (int j = 0; j < key.length; ++j) {
+      String b = key[j];
+      if (b == ' ' || b == '\n' || b == '\r' || b == 0) {
+        throw new ArgumentError(
+            "Key contains invalid characters:  ``$key''");
       }
     }
-    return _opQueue.isEmpty; //no more to process
-  }
-
-  void _process0() {
-    OP op = _currentOp;
-    print("OPState.WRITING: $op\n");
-    op.state = OPState.WRITING;
-    List<int> cmd = op.cmd;
-    print("write sockcet cmd: [${decodeUtf8(cmd)}]");
-    _socket.add(cmd); //see setupResponseHandler
-    op.state = OPState.READING; //wait socket.input.onData()
-  }
-
-  //handle the socket reading of _currentOp
-  ByteBuffer pbuf = new ByteBuffer();
-  void setupResponseHandler() {
-    _socket.listen((List<int> data) {
-      if (data == null) //no data
-        return;
-
-        pbuf.addAll(data);
-        _currentOp.processResponse(pbuf);
-    }, onDone: () => print("Socket closed!"));
-  }
-
-  void _close0() {
-    if (_socket != null)
-      _socket.close();
   }
 }

@@ -1,7 +1,8 @@
 part of rikulo_memcached;
 
 /**
- * State of this operation.
+ * State of this operation. We use the OPState to control the temple of OP
+ * processing: see MemcachedNode#process().
  */
 class OPState extends Enum {
   /**
@@ -25,6 +26,14 @@ class OPState extends Enum {
    * this means vbucket hashing and there is a topology change.
    */
   static const OPState RETRY = const OPState(4);
+  /**
+   * Special State for authenticating OP.
+   */
+  static const OPState WAIT = const OPState(100);
+  /**
+   * Special state indicate that this OP is canceled before processed.
+   */
+  static const OPState CANCELED = const OPState(200);
 
   const OPState(int ordinal)
       : super(ordinal);

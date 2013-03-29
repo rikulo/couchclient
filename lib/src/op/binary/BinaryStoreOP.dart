@@ -6,23 +6,23 @@ part of rikulo_memcached;
 
 /** A Store Operation of binary protocol */
 class BinaryStoreOP extends BinaryOP implements StoreOP {
-  final Completer _cmpl; //completer to complete the future of this operation
+  final Completer<bool> _cmpl; //completer to complete the future of this operation
   final int _req_extralen;
 
   Future<bool> get future
   => _cmpl.future;
 
   BinaryStoreOP(OPType type, String key, int flags, int exp, List<int> doc,
-                [int cas, int msecs = _TIMEOUT])
+                int cas)
       : _req_extralen = type == OPType.append || type == OPType.prepend ? 0 : 8,
-        _cmpl = new Completer(),
-        super(msecs) {
+        _cmpl = new Completer() {
+
     _cmd = _prepareStoreCommand(type, key, flags, exp, doc, cas);
   }
 
   //@Override
   int handleData(List<int> line) {
-    print("BinaryStoreOpData: $this, $line\n");
+    _logger.finest("BinaryStoreOPData: $this, $line.");
     if (_status != 0)
       _cmpl.completeError(OPStatus.valueOf(_status));
     else {
@@ -37,7 +37,7 @@ class BinaryStoreOP extends BinaryOP implements StoreOP {
    */
 
   List<int> _prepareStoreCommand(OPType type, String key, int flags, int exp,
-      List<int> doc, int cas, [int vbucketID = 0]) {
+      List<int> doc, int cas) {
     List<int> keybytes = encodeUtf8(key);
     int keylen = keybytes.length;
     int valuelen = doc.length;
@@ -53,8 +53,6 @@ class BinaryStoreOP extends BinaryOP implements StoreOP {
     //4, 2 bytes: extra length
     copyList(int8ToBytes(_req_extralen), 0, cmd, 4, 1);
     //6, 2 bytes: vBucket id
-    if (0 != vbucketID)
-      copyList(int16ToBytes(vbucketID), 0, cmd, 6, 2);
     //8, 4 bytes: total body length
     copyList(int32ToBytes(bodylen), 0, cmd, 8, 4);
     //12, 4 bytes: Opaque
@@ -71,7 +69,7 @@ class BinaryStoreOP extends BinaryOP implements StoreOP {
     //24+_req_extralen+keylen, valuelen
     if (valuelen != null && 0 != valuelen)
       copyList(doc, 0, cmd, 24 + _req_extralen + keylen, valuelen);
-    print("_prepareStoreCommand:$cmd\n");
+    _logger.finest("_prepareStoreCommand:$cmd");
     return cmd;
   }
 

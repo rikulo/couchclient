@@ -7,15 +7,14 @@ class TextMutateOP extends TextOP implements MutateOP {
   Future<int> get future
   => _cmpl.future;
 
-  TextMutateOP(OPType type, String key, int value, [int msecs = _TIMEOUT])
-      : _cmpl = new Completer(),
-        super(msecs) {
+  TextMutateOP(OPType type, String key, int value)
+      : _cmpl = new Completer() {
     _cmd = _prepareMutateCommand(type, key, value);
   }
 
   //@Override
   int handleTextCommand(String line) {
-    print("MutateOpCommand: $this, [${line}]\n");
+    _logger.finest("MutateOpCommand: $this, [${line}]\n");
     OPStatus status = TextOPStatus.valueOfError(line);
     if (status != null)
       _cmpl.completeError(status);
@@ -46,7 +45,7 @@ class TextMutateOP extends TextOP implements MutateOP {
        ..addAll(encodeUtf8('$value'))
        ..addAll(_CRLF);
 
-    print("_prepareMutateCommand:[${decodeUtf8(cmd)}]\n");
+    _logger.finest("_prepareMutateCommand:[${decodeUtf8(cmd)}]\n");
     return cmd;
   }
 

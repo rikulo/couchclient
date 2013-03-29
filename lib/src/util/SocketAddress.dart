@@ -9,5 +9,11 @@ class SocketAddress {
   int port;
 
   SocketAddress(this.host, this.port);
+
+  String toUri()
+  => '$host:$port';
+
+  String toString()
+  => toUri();
 }
 

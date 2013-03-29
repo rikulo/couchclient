@@ -78,6 +78,16 @@ class OPType extends Enum {
    */
   static const delete = const OPType(0x04, 'delete');
 
+  //SASL
+  /**
+   * SASL authentication
+   */
+  static const saslMechs = const OPType(0x20, 'saslMechs');
+
+  static const saslAuth = const OPType(0x21, 'saslAuth');
+
+  static const saslStep = const OPType(0x22, 'saslStep');
+
   //Other
   /**
    * No operation.

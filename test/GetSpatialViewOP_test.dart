@@ -7,6 +7,7 @@ import 'dart:uri';
 import 'dart:utf';
 import 'package:unittest/unittest.dart';
 import 'package:rikulo_memcached/memcached.dart';
+import 'CouchbaseTestUtil.dart' as cc;
 
 void testGetSpatialViewOP0(CouchClient client, String designDocName, String viewName) {
   expect(client.getSpatialView(designDocName, viewName), completion(isNull));
@@ -19,8 +20,7 @@ String DEFAULT_BUCKET_NAME = 'default';
 void main() {
   group('GetSpatialViewOPTest:', () {
     CouchClient client;
-    List<Uri> baseList = new List();
-    setUp(() => client = new CouchClient('localhost', port: 8092, bucket: 'beer-sample'));
+    setUp(() => cc.prepareCouchClient().then((c) => client = c));
     tearDown(() => client.close());
     test('TestGetSpatialViewOP0', () => testGetSpatialViewOP0(client, 'beer', 'brewery_beers'));
   });

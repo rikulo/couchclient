@@ -7,6 +7,7 @@ import 'dart:uri';
 import 'dart:utf';
 import 'package:unittest/unittest.dart';
 import 'package:rikulo_memcached/memcached.dart';
+import 'CouchbaseTestUtil.dart' as cc;
 
 void testPutDesignDocOP0(CouchClient client, String designDocName) {
   ViewDesign view1 = new ViewDesign('xyzview', 'function(doc, meta) {emit([doc.brewery_id]);}');
@@ -21,8 +22,7 @@ String DEFAULT_BUCKET_NAME = 'default';
 void main() {
   group('GetDesignDocOPTest:', () {
     CouchClient client;
-    List<Uri> baseList = new List();
-    setUp(() => client = new CouchClient('localhost', port: 8092, bucket : 'beer-sample'));
+    setUp(() => cc.prepareCouchClient().then((c) => client = c));
     tearDown(() => client.close());
     test('TestPutDesignDocOP0', () => testPutDesignDocOP0(client, 'xyzdoc'));
   });

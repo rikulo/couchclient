@@ -7,15 +7,14 @@ class TextTouchOP extends TextOP implements TouchOP {
   Future<bool> get future
   => _cmpl.future;
 
-  TextTouchOP(String key, int exp, [int msecs = _TIMEOUT])
-      : _cmpl = new Completer(),
-        super(msecs) {
+  TextTouchOP(String key, int exp)
+      : _cmpl = new Completer() {
     _cmd = _prepareTouchCommand(key, exp);
   }
 
   //@Override
   int handleTextCommand(String line) {
-    print("TouchOpCommand: $this, [${line}]\n");
+    _logger.finest("TouchOpCommand: $this, [${line}]\n");
     OPStatus status = TextOPStatus.valueOfError(line);
     if (status != null)
       _cmpl.completeError(status);
@@ -46,7 +45,7 @@ class TextTouchOP extends TextOP implements TouchOP {
        ..addAll(encodeUtf8('$exp'))
        ..addAll(_CRLF);
 
-    print("_prepareTouchCommand:[${decodeUtf8(cmd)}]\n");
+    _logger.finest("_prepareTouchCommand:[${decodeUtf8(cmd)}]\n");
     return cmd;
   }
 

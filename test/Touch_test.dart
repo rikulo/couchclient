@@ -6,36 +6,35 @@ import 'dart:async';
 import 'dart:utf';
 import 'package:unittest/unittest.dart';
 import 'package:rikulo_memcached/memcached.dart';
+import 'MemcachedTestUtil.dart' as m;
 
 void testTouch(MemcachedClient client) {
   expect(client.set('key100', encodeUtf8('val100')), completion(isTrue));
-  Future f1 = null; //touch expiration time to 2 seconds
-  Future f2 = client.get('key100');
-  f2.then((val) {
-    expect(val.data, equals(encodeUtf8('val100')));
-    f1 = client.touch('key100', 1);
-    f1.then((b) {
+  Future f1 = client.get('key100')
+    .then((val) {
+      expect(val.data, equals(encodeUtf8('val100')));
+      return client.touch('key100', 1); //expire in 1 seconds
+    }).then((b) {
       expect(b, isTrue);
-      new Timer(new Duration(seconds:2),expectAsync0(() {
-        expect(client.get('key100'), throwsA(equals(OPStatus.KEY_NOT_FOUND)));
-      }));
+      return new Future.delayed(new Duration(seconds:2));
+    }).then((_) {
+      return client.get('key100');
     });
-    expect(f1, completes);
-  });
 
-  expect(f2, completes);
+  expect(f1, throwsA(equals(OPStatus.KEY_NOT_FOUND)));
 }
 
 void main() {
+  setupLogger();
   group('TextTouchTest:', () {
     MemcachedClient client;
-    setUp(() => client = new MemcachedClient('localhost'));
+    setUp(() => m.prepareTextClient().then((c) => client = c));
     tearDown(() => client.close());
     test('TestTouch', () => testTouch(client));
   });
   group('BinaryTouchTest:', () {
     MemcachedClient client;
-    setUp(() => client = new MemcachedClient('localhost'));
+    setUp(() => m.prepareBinaryClient().then((c) => client = c));
     tearDown(() => client.close());
     test('TestTouch', () => testTouch(client));
   });

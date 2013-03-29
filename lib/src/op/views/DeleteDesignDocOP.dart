@@ -13,8 +13,7 @@ class DeleteDesignDocOP extends DeleteHttpOP {
   final String designDocName;
 
   DeleteDesignDocOP(String bucketName, this.designDocName, [int msecs])
-      : _cmpl = new Completer(),
-        super(msecs) {
+      : _cmpl = new Completer() {
 
     _cmd = Uri.parse('/$bucketName/_design/$designDocName');
   }

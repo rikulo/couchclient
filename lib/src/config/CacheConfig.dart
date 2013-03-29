@@ -21,6 +21,15 @@ class CacheConfig implements Config {
     throw new StateError("TODO: refctor this");
   }
 
+  String getServer(int serverIndex) {
+    if (serverIndex > servers.length - 1) {
+      throw new ArgumentError(
+          "Server index is out of bounds, index = $serverIndex"
+          ", servers count = ${servers.length}");
+    }
+    return servers[serverIndex];
+  }
+
   int getVbucketByKey(String key) {
     throw new StateError("TODO: refctor this");
   }

@@ -6,6 +6,7 @@ import 'dart:async';
 import 'dart:utf';
 import 'package:unittest/unittest.dart';
 import 'package:rikulo_memcached/memcached.dart';
+import 'MemcachedTestUtil.dart' as m;
 
 //increment 1 by 5 to 6
 void testIncrement1(MemcachedClient client) {
@@ -60,19 +61,20 @@ void testDecrement2(MemcachedClient client) {
 }
 
 void main() {
-  group('TextMutateTest:', () {
-    MemcachedClient client;
-    setUp(() => client = new MemcachedClient('localhost'));
-    tearDown(() => client.close());
-    test('TestIncrement1', () => testIncrement1(client));
-    test('TestIncrement2', () => testIncrement2(client));
-    test('TestDecrement1', () => testDecrement1(client));
-    test('TestDecrement2', () => testDecrement2(client));
-  });
+  setupLogger();
+//  group('TextMutateTest:', () {
+//    MemcachedClient client;
+//    setUp(() => m.prepareTextClient().then((c) => client = c));
+//    tearDown(() => client.close());
+//    test('TestIncrement1', () => testIncrement1(client));
+//    test('TestIncrement2', () => testIncrement2(client));
+//    test('TestDecrement1', () => testDecrement1(client));
+//    test('TestDecrement2', () => testDecrement2(client));
+//  });
 
   group('BinaryMutateTest:', () {
     MemcachedClient client;
-    setUp(() => client = new MemcachedClient('localhost', factory: new BinaryOPFactory()));
+    setUp(() => m.prepareBinaryClient().then((c) => client = c));
     tearDown(() => client.close());
     test('TestIncrement1', () => testIncrement1(client));
     test('TestIncrement2', () => testIncrement2(client));

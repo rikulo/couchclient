@@ -7,9 +7,8 @@ class TextGetOP extends TextOP implements GetOP {
   Stream<GetResult> get stream
   => _streamCtrl.stream;
 
-  TextGetOP(OPType type, List<String> keys, [int msecs = _TIMEOUT])
-      : _streamCtrl = new StreamController(),
-        super(msecs) {
+  TextGetOP(OPType type, List<String> keys)
+      : _streamCtrl = new StreamController() {
     _cmd = _prepareGetCommand(type, keys);
   }
 
@@ -17,17 +16,18 @@ class TextGetOP extends TextOP implements GetOP {
   String _key;
   int _flags;
   int _cas;
-  bool _hasValue = false;
 
   int handleTextCommand(String line) {
     int result = _handleCommand0(line);
-    if (result == _HANDLE_COMPLETE)
+    if (result == _HANDLE_COMPLETE) {
+      _logger.finest("$this: Close stream");
       _streamCtrl.close();
+    }
     return result;
   }
 
   int _handleCommand0(String line) {
-    print("GetOpCommand: $this, [${line}]");
+    _logger.finest("GetOpCommand: $this, [${line}]");
     if ("END" == line) {
       return _HANDLE_COMPLETE; //complete
     } else if (line.startsWith("VALUE ")) {
@@ -40,18 +40,19 @@ class TextGetOP extends TextOP implements GetOP {
     } else {
       OPStatus status = TextOPStatus.valueOfError(line);
       if (status != null) { //some error occur!
-        _streamCtrl.signalError(status);
+        _streamCtrl.addError(new AsyncError(status));
         return _HANDLE_COMPLETE; //complete
       }
 
       //TODO: unknown protocol, try to read thru!
-      _streamCtrl.signalError(new OPStatus(OPStatus.INTERAL_ERROR.code, "PROTOCOL_ERROR 'Unknown get result format:[$line]'"));
-      return _HANDLE_CMD;
+      _streamCtrl.addError(new AsyncError(new OPStatus(OPStatus.INTERAL_ERROR.code, "PROTOCOL_ERROR 'Unknown get result format:[$line]'")));
+      return _HANDLE_COMPLETE;
     }
   }
 
   //Override
   int handleData(List<int> buf) {
+    _logger.finest("GetOpCommand: $this, data:$buf");
     _streamCtrl.add(new GetResult(_key, _flags, _cas, buf));
     return _HANDLE_CMD; //handle next line of command
   }
@@ -68,7 +69,7 @@ class TextGetOP extends TextOP implements GetOP {
     }
     cmd.addAll(_CRLF);
 
-    print("_prepareGetCommand:[${decodeUtf8(cmd)}]\n");
+    _logger.finest("_prepareGetCommand:[${decodeUtf8(cmd)}]\n");
     return cmd;
   }
 

@@ -29,6 +29,9 @@ class DefaultConfig implements Config {
         mask = vbucketsCount - 1,
         configType = ConfigType.COUCHBASE;
 
+  String getServer(int serverIndex)
+  => servers[serverIndex];
+
   //Vbucket access
   int getVbucketByKey(String key)
   => mask & hashAlgorithm(key);

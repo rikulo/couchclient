@@ -7,6 +7,7 @@ import 'dart:uri';
 import 'dart:utf';
 import 'package:unittest/unittest.dart';
 import 'package:rikulo_memcached/memcached.dart';
+import 'CouchbaseTestUtil.dart' as cc;
 
 //test getViewOP
 void testNoDocsOP0(CouchClient client, String designDocName, String viewName) {
@@ -19,8 +20,8 @@ void testNoDocsOP0(CouchClient client, String designDocName, String viewName) {
     expect(view.hasMap, isTrue);
     expect(view.hasReduce, isFalse);
     Query query = new Query();
-    query.setLimit(10);
-    query.setDescending(true);
+    query.limit = 10;
+    query.descending = true;
     return client.query(view, query);
   });
   f2.then((resp) {
@@ -40,8 +41,7 @@ String DEFAULT_BUCKET_NAME = 'default';
 void main() {
   group('NoDocsOPTest:', () {
     CouchClient client;
-    List<Uri> baseList = new List();
-    setUp(() => client = new CouchClient('localhost', port: 8092, bucket: 'beer-sample'));
+    setUp(() => cc.prepareCouchClient().then((c) => client = c));
     tearDown(() => client.close());
     test('TestGetViewOP0', () => testNoDocsOP0(client, 'beer', 'brewery_beers'));
   });

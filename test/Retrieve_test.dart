@@ -6,6 +6,7 @@ import 'dart:async';
 import 'dart:utf';
 import 'package:unittest/unittest.dart';
 import 'package:rikulo_memcached/memcached.dart';
+import 'MemcachedTestUtil.dart' as m;
 
 //get a key
 void testGet1(MemcachedClient client) {
@@ -26,7 +27,7 @@ void testGet2(MemcachedClient client) {
 
 //get multiple key
 void testGetAll(MemcachedClient client) {
-  int count = 20;
+  int count = 2;
   for (int j = 0; j < count; ++j) {
     expect(client.set('key$j', encodeUtf8('val$j')), completion(isTrue));
   }
@@ -36,7 +37,6 @@ void testGetAll(MemcachedClient client) {
     keys.add('key$j');
   }
 
-  int j = 0;
   Stream s1 = client.getAll(keys);
   Future<List<GetResult>> f1 = s1.toList();
 
@@ -99,29 +99,37 @@ void testGetsAll(MemcachedClient client) {
 }
 
 void main() {
+  setupLogger();
+
+//  Future f = m.prepareTextClient().then((c) {
+//    testGetAll(c);
+//  });
+//
+//  expect(f, completes);
+
   group('TextRetrieveTest:', () {
     MemcachedClient client;
-    setUp(() => client = new MemcachedClient('localhost'));
+    setUp(() => m.prepareTextClient().then((c) => client = c));
     tearDown(() => client.close());
-    test('TestGet1', () => testGet1(client));
+//    test('TestGet1', () => testGet1(client));
     test('TestGet2', () => testGet2(client));
-    test('TestGetAll', () => testGetAll(client));
-    test('TestGets1', () => testGets1(client));
-    test('TestGets2', () => testGets2(client));
-    test('TestGetsAll', () => testGetsAll(client));
+//    test('TestGetAll', () => testGetAll(client));
+//    test('TestGets1', () => testGets1(client));
+//    test('TestGets2', () => testGets2(client));
+//    test('TestGetsAll', () => testGetsAll(client));
   });
 
-  group('BinaryRetrieveTest:', () {
-    MemcachedClient client;
-    setUp(() => client = new MemcachedClient('localhost', factory: new BinaryOPFactory()));
-    tearDown(() => client.close());
-    test('TestGet1', () => testGet1(client));
-    test('TestGet2', () => testGet2(client));
-    test('TestGetAll', () => testGetAll(client));
-    test('TestGets1', () => testGets1(client));
-    test('TestGets2', () => testGets2(client));
-    test('TestGetsAll', () => testGetsAll(client));
-  });
+//  group('BinaryRetrieveTest:', () {
+//    MemcachedClient client;
+//    setUp(() => m.prepareBinaryClient().then((c) => client = c));
+//    tearDown(() => client.close());
+//    test('TestGet1', () => testGet1(client));
+//    test('TestGet2', () => testGet2(client));
+//    test('TestGetAll', () => testGetAll(client));
+//    test('TestGets1', () => testGets1(client));
+//    test('TestGets2', () => testGets2(client));
+//    test('TestGetsAll', () => testGetsAll(client));
+//  });
 
 }
 

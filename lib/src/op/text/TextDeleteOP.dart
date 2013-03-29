@@ -7,15 +7,14 @@ class TextDeleteOP extends TextOP implements DeleteOP {
   Future<bool> get future
   => _cmpl.future;
 
-  TextDeleteOP(String key, [int msecs = _TIMEOUT])
-      : _cmpl = new Completer(),
-        super(msecs) {
+  TextDeleteOP(String key)
+      : _cmpl = new Completer() {
     _cmd = _prepareDeleteCommand(key);
   }
 
   //@Override
   int handleTextCommand(String line) {
-    print("DelOpCommand: $this, [${line}]\n");
+    _logger.finest("DelOPCommand: $this, [${line}]");
     OPStatus status = TextOPStatus.valueOfError(line);
     if (status != null)
       _cmpl.completeError(status);
@@ -44,7 +43,7 @@ class TextDeleteOP extends TextOP implements DeleteOP {
        ..addAll(encodeUtf8(key))
        ..addAll(_CRLF);
 
-    print("_prepareDeleteCommand:[${decodeUtf8(cmd)}]\n");
+    _logger.finest("_prepareDeleteCommand:[${decodeUtf8(cmd)}]\n");
     return cmd;
   }
 

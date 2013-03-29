@@ -15,8 +15,7 @@ class GetViewOP extends GetHttpOP {
   final String viewName;
 
   GetViewOP(this.bucketName, this.designDocName, this.viewName, [int msecs])
-      : _cmpl = new Completer(),
-        super(msecs) {
+      : _cmpl = new Completer() {
     _cmd = Uri.parse('/$bucketName/_design/$designDocName');
   }
 

@@ -11,9 +11,8 @@ class BinaryMutateOP extends BinaryOP implements MutateOP {
   Future<int> get future
   => _cmpl.future;
 
-  BinaryMutateOP(OPType type, String key, int value, [int msecs = _TIMEOUT])
-      : _cmpl = new Completer(),
-        super(msecs) {
+  BinaryMutateOP(OPType type, String key, int value)
+      : _cmpl = new Completer() {
     _cmd = _prepareMutateCommand(type, key, value);
   }
 
@@ -33,8 +32,7 @@ class BinaryMutateOP extends BinaryOP implements MutateOP {
   /** Prepare a store command.
    */
   const _req_extralen = 20;
-  List<int> _prepareMutateCommand(OPType type, String key, int amount,
-      [int vbucketID = 0]) {
+  List<int> _prepareMutateCommand(OPType type, String key, int amount) {
     List<int> keybytes = encodeUtf8(key);
     int keylen = keybytes.length;
     int valuelen = 0;
@@ -50,8 +48,6 @@ class BinaryMutateOP extends BinaryOP implements MutateOP {
     //4, 2 bytes: extra length
     copyList(int8ToBytes(_req_extralen), 0, cmd, 4, 1);
     //6, 2 bytes: vBucket id
-    if (0 != vbucketID)
-      copyList(int16ToBytes(vbucketID), 0, cmd, 6, 2);
     //8, 4 bytes: total body length
     copyList(int32ToBytes(bodylen), 0, cmd, 8, 4);
     //12, 4 bytes: Opaque

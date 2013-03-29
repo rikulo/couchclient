@@ -1,6 +1,6 @@
 part of rikulo_memcached;
 
-abstract class CouchClient extends MemcachedClient {
+abstract class CouchClient implements MemcachedClient {
   /**
    * Create a DesignDoc and put into Couchbase; asynchronously return true
    * if succeed.
@@ -33,60 +33,102 @@ abstract class CouchClient extends MemcachedClient {
    */
   Future<ViewResponse> query(AbstractView view, Query query);
 
-  factory CouchClient(String host, {int port:11211, String bucket:'default', String password, OPFactory factory})
-  => new _CouchClientImpl(host, port, bucket, password, factory);
+  static Future<CouchClient> connect(CouchbaseConnectionFactory factory)
+  => _CouchClientImpl.connect(factory);
 }
 
 class _CouchClientImpl extends _MemcachedClientImpl implements CouchClient {
-  Queue<HttpOP> _httpOPQueue;
-  HttpOP _currentHttpOP;
-  Uri baseUri;
+  ViewConnection _viewConn;
+  CouchbaseConnectionFactory _connFactory;
 
-  _CouchClientImpl(String host, int port,
-      String bucketName, String password, OPFactory opFactory)
-      : super(host, port, bucketName, password, opFactory) {
-    _httpOPQueue = new Queue();
-    baseUri = Uri.parse("http://$host:$port");
+  static Future<CouchClient> connect(CouchbaseConnectionFactory factory) {
+    Future<Config> configf = factory.vbucketConfig;
+    return configf.then((config) {
+      ViewConnection viewConn = null;
+      List<SocketAddress> saddrs = _toSocketAddresses(config.servers);
+      if (config.configType == ConfigType.COUCHBASE) {
+        List<SocketAddress> uaddrs = _toSocketAddressesFromUri(config.couchServers);
+        viewConn = factory.createViewConnection(uaddrs);
+      }
+      return factory.createConnection(saddrs)
+        .then((conn) => new _CouchClientImpl(viewConn, conn, factory));
+    });
+  }
+
+  static List<SocketAddress> _toSocketAddressesFromUri(List<Uri> servers) {
+    List<SocketAddress> saddrs = new List();
+    for (Uri server in servers) {
+      saddrs.add(new SocketAddress(server.domain, server.port));
+    }
+    if (saddrs.isEmpty)
+      throw new ArgumentError("servers cannot be empty");
+
+    return saddrs;
+  }
+
+  static List<SocketAddress> _toSocketAddresses(List<String> servers) {
+    List<SocketAddress> saddrs = new List();
+    for (String server in servers) {
+      int colon = server.lastIndexOf(':');
+      if (colon < 1)
+        throw new ArgumentError('Invalid server "$server" in list: $servers');
+      String host = server.substring(0, colon);
+      String port = server.substring(colon+1);
+      saddrs.add(new SocketAddress(host, int.parse(port)));
+    }
+    if (saddrs.isEmpty)
+      throw new ArgumentError("servers cannot be empty");
+
+    return saddrs;
+  }
+
+  _CouchClientImpl(ViewConnection viewConn, CouchbaseConnection memcachedConn,
+                   CouchbaseConnectionFactory connFactory)
+      : _viewConn = viewConn,
+        _connFactory = connFactory,
+        super(memcachedConn, connFactory) {
+
+    _logger = initLogger('couchbase', this);
   }
 
   Future<bool> putDesignDoc(DesignDoc doc) {
-    PutDesignDocOP op = new PutDesignDocOP(bucketName, doc.name, doc.toJson());
+    PutDesignDocOP op = new PutDesignDocOP(_connFactory.bucketName, doc.name, doc.toJson());
     _handleHttpOperation(op);
     return op.future;
   }
 
   Future<bool> deleteDesignDoc(String docName) {
-    DeleteDesignDocOP op = new DeleteDesignDocOP(bucketName, docName);
+    DeleteDesignDocOP op = new DeleteDesignDocOP(_connFactory.bucketName, docName);
     _handleHttpOperation(op);
     return op.future;
   }
 
   Future<DesignDoc> getDesignDoc(String docName) {
-    GetDesignDocOP op = new GetDesignDocOP(bucketName, docName);
+    GetDesignDocOP op = new GetDesignDocOP(_connFactory.bucketName, docName);
     _handleHttpOperation(op);
     return op.future;
   }
 
   Future<View> getView(String docName, String viewName) {
-    GetViewOP op = new GetViewOP(bucketName, docName, viewName);
+    GetViewOP op = new GetViewOP(_connFactory.bucketName, docName, viewName);
     _handleHttpOperation(op);
     return op.future;
   }
 
   Future<SpatialView> getSpatialView(String docName, String viewName) {
-    GetSpatialViewOP op = new GetSpatialViewOP(bucketName, docName, viewName);
+    GetSpatialViewOP op = new GetSpatialViewOP(_connFactory.bucketName, docName, viewName);
     _handleHttpOperation(op);
     return op.future;
   }
 
   Future<ViewResponse> query(AbstractView view, Query query) {
     if (view.hasReduce && !query.args.containsKey('reduce')) {
-      query.setReduce(true);
+      query.reduce = true;
     }
 
     if (query.willReduce) {
       return _queryReduced(view, query);
-    } else if (query.willIncludeDocs) {
+    } else if (query.includeDocs) {
       return _queryWithDocs(view, query);
     } else {
       return _queryNoDocs(view, query);
@@ -104,7 +146,7 @@ class _CouchClientImpl extends _MemcachedClientImpl implements CouchClient {
       }
       Map<String, GetResult> results = new HashMap();
       //TODO: Need to handle retrieve with 'bucket'!
-      Stream<GetResult> st = new MemcachedClient('localhost', bucket : bucketName, factory: new BinaryOPFactory()).getAll(ids);
+      Stream<GetResult> st = getAll(ids);
       st.listen((data) {
         results[data.key] = data;
       },
@@ -132,69 +174,8 @@ class _CouchClientImpl extends _MemcachedClientImpl implements CouchClient {
     return op.future;
   }
 
-  //enque operation into queue and kick start process if necessary
   void _handleHttpOperation(HttpOP op) {
-    if (_toBeClose)
-      throw new StateError("The client has been closed; no way to access the database.");
-
-//TODO: for debug only
-op.seq = seq++;
-    if (_httpOPQueue.isEmpty) { // 0 -> 1, new a Timer as Operation process loop
-      new Timer.repeating(new Duration(milliseconds:_FREQ), (Timer t) {
-        print("Repeating timer\n");
-        if (processHttp()) { //no more operation, cancel the Timer
-          t.cancel();
-          if (_toBeClose)
-            _close0();
-        }
-      });
-    }
-    _httpOPQueue.add(op);
-//    setupTimer();
-  }
-
-//  Timer _timer;
-//  void setupTimer() {
-//    if (_timer == null) {
-//      _timer = Timer.run(() {
-//        _timer.cancel();
-//        _timer = null;
-//        //_socket not ready yet or still operation to process, setup timer again!
-//        if (!connected) {
-//          print("Wait socket connect!");
-//          setupTimer();
-//        } else if (!processHttp()) {
-//          print("Still operation to go!");
-//          setupTimer();
-//        }
-//      });
-//    }
-//  }
-
-  //process Operation in queue; return true to indicate no opeartion to process
-  bool processHttp() {
-    if (_currentHttpOP == null || _currentHttpOP.state == OPState.COMPLETE) { //previous operation is complete
-      if (!_httpOPQueue.isEmpty) {
-        _processHttp0(_currentHttpOP = _httpOPQueue.removeFirst());
-      }
-    }
-    return _httpOPQueue.isEmpty; //no more to process
-  }
-
-  void _processHttp0(HttpOP op) {
-    print("OPState.WRITING HTTP: $op\n");
-    op.state = OPState.WRITING;
-    Uri cmd = op.cmd;
-    print("write http REST cmd: [${cmd}]");
-    HttpClient hc = new HttpClient();
-    Future<String> f = op.handleCommand(hc, baseUri, cmd, bucketName, password);
-    f.then((String buf) {
-      op.processResponse(buf);
-//wait no response: we post the command and assume complete immediately
-//      op.state = OPState.COMPLETE;
-    });
-    //wait no response: we post the command and assume complete
-    op.state = OPState.COMPLETE; //wait no response: OPState.READING
+    _viewConn.addOP(op);
   }
 }
 

@@ -10,5 +10,5 @@ class GetResult {
   GetResult(this.key, this.flags, this.cas, this.data);
 
   String toString()
-  => '$key : $data, flags:$flags, cas:$cas';
+  => '$key:$data, flags:$flags, cas:$cas';
 }

@@ -6,16 +6,15 @@ class TextVersionOP extends TextOP implements VersionOP {
   Future<String> get future
   => _cmpl.future;
 
-  TextVersionOP([int msecs = _TIMEOUT])
-      : _cmpl = new Completer(),
-        super(msecs) {
+  TextVersionOP()
+      : _cmpl = new Completer() {
     _cmd = _prepareVersionCommand();
   }
 
   //@Override
   static final int VERSION_PREFIX_LEN = 'VERSION '.length;
   int handleTextCommand(String line) {
-    print("VersionOpCommand: $this, [${line}]\n");
+    _logger.finest("VersionOpCommand: $this, [${line}]\n");
     OPStatus status = TextOPStatus.valueOfError(line);
     if (status != null)
       _cmpl.completeError(status);
@@ -38,7 +37,7 @@ class TextVersionOP extends TextOP implements VersionOP {
     cmd..addAll(encodeUtf8(OPType.version.name))
        ..addAll(_CRLF);
 
-    print("_prepareVersionCommand:[${decodeUtf8(cmd)}]\n");
+    _logger.finest("_prepareVersionCommand:[${decodeUtf8(cmd)}]\n");
     return cmd;
   }
 

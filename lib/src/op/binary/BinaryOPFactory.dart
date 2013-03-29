@@ -4,24 +4,44 @@
 
 part of rikulo_memcached;
 
-class BinaryOPFactory implements OPFactory {
-  DeleteOP newDeleteOP(String key, [int msecs = _TIMEOUT])
-  => new BinaryDeleteOP(key, msecs);
-
-  GetOP newGetOP(OPType type, List<String> keys, [int msecs = _TIMEOUT])
-  => new BinaryGetOP(type, keys, msecs);
-
-  MutateOP newMutateOP(OPType type, String key, int value, [int msecs = _TIMEOUT])
-  => new BinaryMutateOP(type, key, value, msecs);
-
-  StoreOP newStoreOP(OPType type, String key, int flags, int exp, List<int> doc,
-                     [int cas, int msecs = _TIMEOUT])
-  => new BinaryStoreOP(type, key, flags, exp, doc, cas, msecs);
-
-  TouchOP newTouchOP(String key, int exp, [int msecs = _TIMEOUT])
-  => new BinaryTouchOP(key, exp, msecs);
-
-  VersionOP newVersionOP([int msecs = _TIMEOUT])
-  => new BinaryVersionOP(msecs);
+abstract class BinaryOPFactory extends OPFactory {
+  //Singleton
+  static final BinaryOPFactory _binaryOPFactory = new _BinaryOPFactoryImpl();
+  factory BinaryOPFactory()
+  => _binaryOPFactory;
 }
 
+class _BinaryOPFactoryImpl implements BinaryOPFactory {
+  DeleteOP newDeleteOP(String key)
+  => new BinaryDeleteOP(key);
+
+  GetOP newGetOP(OPType type, List<String> keys)
+  => new BinaryGetOP(type, keys);
+
+  GetSingleOP newGetSingleOP(OPType type, String key)
+  => new BinaryGetSingleOP(type, key);
+
+  MutateOP newMutateOP(OPType type, String key, int value)
+  => new BinaryMutateOP(type, key, value);
+
+  StoreOP newStoreOP(OPType type, String key, int flags, int exp, List<int> doc,
+                     {int cas})
+  => new BinaryStoreOP(type, key, flags, exp, doc, cas);
+
+  TouchOP newTouchOP(String key, int exp)
+  => new BinaryTouchOP(key, exp);
+
+  VersionOP newVersionOP()
+  => new BinaryVersionOP();
+
+  //Sasl OPs
+  SaslMechsOP newSaslMechsOP()
+  => new SaslMechsOP();
+
+  SaslAuthOP newSaslAuthOP(String mechanism, List<int> authData,
+                           {int retry : -1})
+  => new SaslAuthOP(mechanism, authData, retry);
+
+  SaslStepOP newSaslStepOP(String mechanism, List<int> challenge)
+  => new SaslStepOP(mechanism, challenge);
+}

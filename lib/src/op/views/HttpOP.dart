@@ -6,7 +6,6 @@ part of rikulo_memcached;
 
 abstract class HttpOP {
   Uri _cmd; //command in a byte array
-  final int _msecs; //TODO: timeout before giving up(in milliseconds)
   OPState _state; //null is state 0
   int seq;
 
@@ -20,12 +19,48 @@ abstract class HttpOP {
     _state = s;
   }
 
-  HttpOP([int msecs = _TIMEOUT])
-  : _msecs = msecs;
+  /**
+   * Returns whether this OP is canceled by the user.
+   */
+  bool get isCancel
+  => state == OPState.CANCELED;
+
+  /**
+   * Cancel this OP if not processed yet(still in write queue).
+   */
+  void cancel() {
+    if (state == OPState.WRITE_QUEUED)
+      state = OPState.CANCELED;
+  }
 
   void processResponse(String result);
 
   Future<String> handleCommand(HttpClient hc, Uri baseUri, Uri cmd,
       String user, String pass);
+
+  /**
+   * Transition to next state.
+   */
+  void nextState() {
+    if (_state == null)
+      _state = OPState.WRITE_QUEUED;
+    else if (_state == OPState.WRITE_QUEUED)
+      _state = OPState.WRITING;
+    else if (_state == OPState.WRITING)
+      _state = OPState.READING;
+    else if (_state == OPState.READING)
+      _state = OPState.COMPLETE;
+    else if (_state == OPState.RETRY)
+      _state = OPState.WRITE_QUEUED;
+    else if (_state == OPState.CANCELED)
+      _state = OPState.COMPLETE;
+  }
+
+  /**
+   * Indicate the completion of processing an OP.
+   */
+  void complete() {
+    _state = OPState.COMPLETE;
+  }
 }
 

@@ -7,6 +7,7 @@ import 'dart:uri';
 import 'dart:utf';
 import 'package:unittest/unittest.dart';
 import 'package:rikulo_memcached/memcached.dart';
+import 'CouchbaseTestUtil.dart' as cc;
 
 //test getViewOP
 void testReducedOP0(CouchClient client, String designDocName, String viewName) {
@@ -31,15 +32,10 @@ void testReducedOP0(CouchClient client, String designDocName, String viewName) {
   expect(f2, completes);
 }
 
-String REST_USER = 'Administrator';
-String REST_PWD = 'password';
-String DEFAULT_BUCKET_NAME = 'default';
-
 void main() {
   group('ReducedOPTest:', () {
     CouchClient client;
-    List<Uri> baseList = new List();
-    setUp(() => client = new CouchClient('localhost', port : 8092, bucket : 'beer-sample'));
+    setUp(() => cc.prepareCouchClient().then((c) => client = c));
     tearDown(() => client.close());
     test('TestGetViewOP0', () => testReducedOP0(client, 'beer', 'by_location'));
   });

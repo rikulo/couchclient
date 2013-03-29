@@ -11,15 +11,14 @@ class BinaryDeleteOP extends BinaryOP implements DeleteOP {
   Future<bool> get future
   => _cmpl.future;
 
-  BinaryDeleteOP(String key, [int msecs = _TIMEOUT])
-      : _cmpl = new Completer(),
-        super(msecs) {
+  BinaryDeleteOP(String key)
+      : _cmpl = new Completer() {
     _cmd = _prepareDeleteCommand(key);
   }
 
   //@Override
   int handleData(List<int> line) {
-    print("BinaryDeleteOpData: $this, $line\n");
+    _logger.finest("BinaryDeleteOpData: $this, $line");
     if (_status != 0)
       _cmpl.completeError(OPStatus.valueOf(_status));
     else {
@@ -33,7 +32,7 @@ class BinaryDeleteOP extends BinaryOP implements DeleteOP {
   /** Prepare a delete command.
    */
   const int _req_extralen = 0;
-  List<int> _prepareDeleteCommand(String key, [int vbucketID = 0]) {
+  List<int> _prepareDeleteCommand(String key) {
     List<int> keybytes = encodeUtf8(key);
     int keylen = keybytes.length;
     int valuelen = 0;
@@ -48,8 +47,6 @@ class BinaryDeleteOP extends BinaryOP implements DeleteOP {
     copyList(int16ToBytes(keylen), 0, cmd, 2, 2);
     //4, 2 bytes: extra length
     //6, 2 bytes: vBucket id
-    if (0 != vbucketID)
-      copyList(int16ToBytes(vbucketID), 0, cmd, 6, 2);
     //8, 4 bytes: total body length
     copyList(int32ToBytes(bodylen), 0, cmd, 8, 4);
     //12, 4 bytes: Opaque
@@ -59,7 +56,7 @@ class BinaryDeleteOP extends BinaryOP implements DeleteOP {
     copyList(keybytes, 0, cmd, 24 + _req_extralen, keylen);
     //24+_req_extralen+keylen, valuelen
 
-    print("_prepareDeleteCommand:$cmd\n");
+    _logger.finest("_prepareDeleteCommand:$cmd");
     return cmd;
   }
 

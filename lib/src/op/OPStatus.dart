@@ -12,8 +12,8 @@ class OPStatus {
   static const ITEM_NOT_STORED = const OPStatus(0x0005, "Item not stored");
   static const NOT_NUMERIC = const OPStatus(0x0006, "Incr/Decr on non-numeric value");
   static const WRONG_SERVER = const OPStatus(0x0007, "The vbucket belongs to another server");
-  static const AUTHEN_ERROR = const OPStatus(0x0008, "Authentication error");
-  static const AUTHEN_CONT = const OPStatus(0x0009, "Authentication continue");
+  static const AUTHEN_ERROR = const OPStatus(0x20, "Authentication error");
+  static const AUTHEN_CONT = const OPStatus(0x21, "Authentication continue");
   static const UNKNOWN_COMMAND = const OPStatus(0x0081, "Unknown command");
   static const OUT_OF_MEMORY = const OPStatus(0x0082, "Out of memory");
   static const NOT_SUPPORTED = const OPStatus(0x0083, "Not supported");

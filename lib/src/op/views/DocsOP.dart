@@ -12,8 +12,7 @@ abstract class DocsOP extends GetHttpOP {
   => _cmpl.future;
 
   DocsOP(this.view, Query query, [int msecs])
-      : _cmpl = new Completer(),
-        super(msecs) {
+      : _cmpl = new Completer() {
     String viewUri = view.uri;
     String queryToRun = query.toString();
     _cmd = Uri.parse('${view.uri}${query.toString()}');

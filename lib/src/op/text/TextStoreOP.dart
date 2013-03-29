@@ -9,16 +9,15 @@ class TextStoreOP extends TextOP implements StoreOP {
   => _cmpl.future;
 
   TextStoreOP(OPType type, String key, int flags, int exp, List<int> doc,
-      [int cas, int msecs = _TIMEOUT])
+      int cas)
       : _type = type,
-        _cmpl = new Completer(),
-        super(msecs) {
+        _cmpl = new Completer() {
     _cmd = _prepareStoreCommand(type, key, flags, exp, doc, cas);
   }
 
   //@Override
   int handleTextCommand(String line) {
-    print("StoreOpCommand: $this, [${line}]\n");
+    _logger.finest("StoreOpCommand: $this, [${line}]\n");
     OPStatus status = TextOPStatus.valueOfError(line);
     if (status != null)
       _cmpl.completeError(status);
@@ -62,7 +61,7 @@ class TextStoreOP extends TextOP implements StoreOP {
        ..addAll(doc)
        ..addAll(_CRLF);
 
-    print("_prepareStoreCommand:[${decodeUtf8(cmd)}]\n");
+    _logger.finest("_prepareStoreCommand:[${decodeUtf8(cmd)}]");
     return cmd;
   }
 

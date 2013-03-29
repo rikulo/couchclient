@@ -6,8 +6,7 @@ part of rikulo_memcached;
 
 abstract class PutHttpOP extends HttpOP {
   final String value;
-  PutHttpOP(this.value, int msecs)
-    : super(msecs);
+  PutHttpOP(this.value);
 
   Future<String> handleCommand(HttpClient hc, Uri baseUri, Uri cmd,
         String user, String pass)

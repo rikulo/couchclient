@@ -13,8 +13,7 @@ class GetDesignDocOP extends GetHttpOP {
   final String designDocName;
 
   GetDesignDocOP(String bucketName, this.designDocName, [int msecs])
-      : _cmpl = new Completer(),
-        super(msecs) {
+      : _cmpl = new Completer() {
 
     _cmd = Uri.parse('/$bucketName/_design/$designDocName');
   }
@@ -23,6 +22,7 @@ class GetDesignDocOP extends GetHttpOP {
     Map jo = json.parse(base);
     if (jo.containsKey('error')) {
       _cmpl.complete(null);
+      return;
     }
     String language = jo['language'];
     Map<String, Map> viewsjo = jo['views'];

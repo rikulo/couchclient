@@ -11,20 +11,18 @@ class BinaryTouchOP extends BinaryOP implements TouchOP {
   Future<bool> get future
   => _cmpl.future;
 
-  BinaryTouchOP(String key, int exp, [int msecs = _TIMEOUT])
-      : _cmpl = new Completer(),
-        super(msecs) {
+  BinaryTouchOP(String key, int exp)
+      : _cmpl = new Completer() {
     _cmd = _prepareTouchCommand(key, exp);
   }
 
   //@Override
   int handleData(List<int> line) {
-    print("BinaryTouchOpData: $this, $line\n");
+    _logger.finest("BinaryTouchOpData: $this, $line\n");
     if (_status != 0)
       _cmpl.completeError(OPStatus.valueOf(_status));
-    else {
-      _cmpl.complete(bytesToInt64(line, 0));
-    }
+    else
+      _cmpl.complete(true);
 
     return _HANDLE_COMPLETE;
   }
@@ -33,7 +31,7 @@ class BinaryTouchOP extends BinaryOP implements TouchOP {
   /** Prepare a store command.
    */
   const _req_extralen = 4;
-  List<int> _prepareTouchCommand(String key, int exp, [int vbucketID = 0]) {
+  List<int> _prepareTouchCommand(String key, int exp) {
     List<int> keybytes = encodeUtf8(key);
     int keylen = keybytes.length;
     int valuelen = 0;
@@ -49,8 +47,6 @@ class BinaryTouchOP extends BinaryOP implements TouchOP {
     //4, 2 bytes: extra length
     copyList(int8ToBytes(_req_extralen), 0, cmd, 4, 1);
     //6, 2 bytes: vBucket id
-    if (0 != vbucketID)
-      copyList(int16ToBytes(vbucketID), 0, cmd, 6, 2);
     //8, 4 bytes: total body length
     copyList(int32ToBytes(bodylen), 0, cmd, 8, 4);
     //12, 4 bytes: Opaque
@@ -61,7 +57,7 @@ class BinaryTouchOP extends BinaryOP implements TouchOP {
     //24+_req_extralen, keylen: key
     copyList(keybytes, 0, cmd, 24 + _req_extralen, keylen);
     //24+_req_extralen+keylen, valuelen
-    print("_prepareTouchCommand:$cmd\n");
+    _logger.finest("_prepareTouchCommand:$cmd\n");
     return cmd;
   }
 

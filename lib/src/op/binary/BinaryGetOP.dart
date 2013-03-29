@@ -9,23 +9,42 @@ class BinaryGetOP extends BinaryOP implements GetOP {
   final StreamController<GetResult> _streamCtrl;
 
   List<OPStatus> _errors; //accumulated errors, if any
-  bool _ignoreCas;
+  final bool _ignoreCas;
+  final List<int> _cmdOffsets;
 
-  Stream<GetResult> get stream
-  => _streamCtrl.stream;
-
-  BinaryGetOP(OPType type, List<String> keys, [int msecs = _TIMEOUT])
+  BinaryGetOP(OPType type, List<String> keys)
       : _streamCtrl = new StreamController(),
         _ignoreCas = type == OPType.get,
-        super(msecs) {
+        _cmdOffsets = new List(keys.length + 1) {
     _cmd = _prepareGetCommand(keys);
     _errors = new List();
   }
 
+  //-- GetOP --//
+  //@Override
+  Stream<GetResult> get stream
+  => _streamCtrl.stream;
+
+  //@Override
+  void set seq(int s) {
+    //opacque field for this OP(multiple getkq + noop)
+    List<int> src = int32ToBytes(s);
+    for(int offset in _cmdOffsets)
+      copyList(src, 0, _cmd, offset + 12, 4);
+    _seq= s;
+  }
+
+  //@Override
+  void set vbucketID(int id) {
+    //vbucketID field for this OP(multiple getkq + noop)
+    List<int> src = int16ToBytes(id);
+    for(int offset in _cmdOffsets)
+      copyList(src, 0, _cmd, offset + 6, 2);
+  }
 
   //@Override
   int handleData(List<int> line) {
-    print("BinaryGetOpData: $this, $line\n");
+    _logger.finest("BinaryGetOPData: $this, $line.");
 
     if (_opCode == OPType.getkq.ordinal) {
       if (_status != 0) {
@@ -49,7 +68,7 @@ class BinaryGetOP extends BinaryOP implements GetOP {
       }
 
       if (!_errors.isEmpty) {
-        _streamCtrl.signalError(_errors);
+        _streamCtrl.signalError(new AsyncError(_errors));
       } else {
         _streamCtrl.close();
       }
@@ -59,31 +78,34 @@ class BinaryGetOP extends BinaryOP implements GetOP {
 
   /** Prepare n getkq commands + one noop command.
    */
-  List<int> _prepareGetCommand(List<String> keys, [int vbucketID = 0]) {
+  List<int> _prepareGetCommand(List<String> keys) {
     List<int> multicmds = new List();
     int len = keys.length;
+    int j = 0;
     for(String key in keys) {
-      multicmds.addAll(_prepareGetKQCommand(key, vbucketID));
+      _cmdOffsets[j++] = multicmds.length;
+      multicmds.addAll(_prepareGetKQCommand(key));
     }
-    multicmds.addAll(_prepareNoopCommand(vbucketID));
+    _cmdOffsets[j] = multicmds.length;
+    multicmds.addAll(_prepareNoopCommand());
     return multicmds;
   }
 
   //Prepare Noop command
-  List<int> _prepareNoopCommand([int vbucketID = 0]) {
+  List<int> _prepareNoopCommand() {
     Uint8List cmd = new Uint8List(24);
     //0, 1 byte: Magic byte of request
     cmd[0] = _MAGIC_REQ;
     //1, 1 byte: Opcode
     cmd[1] = OPType.noop.ordinal;
 
-    print("_prepareNoopCommand:$cmd\n");
+    _logger.finest("_prepareNoopCommand:$cmd");
     return cmd;
   }
 
   //Prepare one getkq command
   const int _req_extralen = 0;
-  List<int> _prepareGetKQCommand(String key, [int vbucketID = 0]) {
+  List<int> _prepareGetKQCommand(String key) {
     List<int> keybytes = encodeUtf8(key);
     int keylen = keybytes.length;
     int valuelen = 0;
@@ -98,8 +120,6 @@ class BinaryGetOP extends BinaryOP implements GetOP {
     copyList(int16ToBytes(keylen), 0, cmd, 2, 2);
     //4, 2 bytes: extra length
     //6, 2 bytes: vBucket id
-    if (0 != vbucketID)
-      copyList(int16ToBytes(vbucketID), 0, cmd, 6, 2);
     //8, 4 bytes: total body length
     copyList(int32ToBytes(bodylen), 0, cmd, 8, 4);
     //12, 4 bytes: Opaque
@@ -108,7 +128,7 @@ class BinaryGetOP extends BinaryOP implements GetOP {
     //24+_req_extralen, keylen: key
     copyList(keybytes, 0, cmd, 24 + _req_extralen, keylen);
     //24+_req_extralen+keylen, valuelen
-    print("_prepareGetKQCommand:$cmd\n");
+    _logger.finest("_prepareGetKQCommand:$cmd");
     return cmd;
   }
 

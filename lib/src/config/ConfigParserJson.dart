@@ -9,6 +9,12 @@ class ConfigParserJson {
   static const String URI_ATTR = "uri";
   static const String STREAMING_URI_ATTR = "streamingUri";
 
+  Logger _logger;
+
+  ConfigParserJson() {
+    _logger = initLogger('couchbase.config', this);
+  }
+
   //TODO: catch error
   Map<String, Pool> parseBase(String base) {
     Map<String, Pool> parsedBase = new HashMap();
@@ -70,7 +76,7 @@ class ConfigParserJson {
       Node node = new Node(status, hostname, ports);
       nodes.add(node);
     }
-    print("streamingUri------>$streamingUri");
+    _logger.finest("streamingUri->$streamingUri");
     return new Bucket(bucketname, config, Uri.parse(streamingUri), nodes);
   }
 }

@@ -12,9 +12,9 @@ class PutDesignDocOP extends PutHttpOP {
 
   final String designDocName;
 
-  PutDesignDocOP(String bucketName, this.designDocName, String value, [int msecs])
+  PutDesignDocOP(String bucketName, this.designDocName, String value)
       : _cmpl = new Completer(),
-        super(value, msecs) {
+        super(value) {
 
     _cmd = Uri.parse('/$bucketName/_design/$designDocName');
   }
