@@ -2,7 +2,7 @@
 //History: Wed, Mar 04, 2013  05:36:10 PM
 // Author: hernichen
 
-part of rikulo_memcached;
+part of couchclient;
 
 class Node {
   final Status status;

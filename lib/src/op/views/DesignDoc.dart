@@ -2,7 +2,7 @@
 //History: Thu, Mar 07, 2013  11:41:31 AM
 // Author: hernichen
 
-part of rikulo_memcached;
+part of couchclient;
 
 class DesignDoc {
   /**

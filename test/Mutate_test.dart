@@ -5,11 +5,12 @@
 import 'dart:async';
 import 'dart:utf';
 import 'package:unittest/unittest.dart';
-import 'package:rikulo_memcached/memcached.dart';
-import 'MemcachedTestUtil.dart' as m;
+import 'package:memcached_client/memcached_client.dart';
+import 'package:couchclient/couchclient.dart';
+import 'CouchbaseTestUtil.dart' as cc;
 
 //increment 1 by 5 to 6
-void testIncrement1(MemcachedClient client) {
+void testIncrement1(CouchClient client) {
   expect(client.set('key0', encodeUtf8('1')), completion(isTrue));
 
   Future f1 = client.get('key0');
@@ -22,7 +23,7 @@ void testIncrement1(MemcachedClient client) {
 }
 
 //increment v1 by 5 to 6; should throws Error
-void testIncrement2(MemcachedClient client) {
+void testIncrement2(CouchClient client) {
   expect(client.set('key0', encodeUtf8('v1')), completion(isTrue));
 
   Future f1 = client.get('key0');
@@ -35,7 +36,7 @@ void testIncrement2(MemcachedClient client) {
 }
 
 //decrement 10 by 4 to 6
-void testDecrement1(MemcachedClient client) {
+void testDecrement1(CouchClient client) {
   expect(client.set('key0', encodeUtf8('10')), completion(isTrue));
 
   Future f1 = client.get('key0');
@@ -48,7 +49,7 @@ void testDecrement1(MemcachedClient client) {
 }
 
 //decrement v10 by 4 to 6; should throws error.
-void testDecrement2(MemcachedClient client) {
+void testDecrement2(CouchClient client) {
   expect(client.set('key0', encodeUtf8('v10')), completion(isTrue));
 
   Future f1 = client.get('key0');
@@ -62,19 +63,9 @@ void testDecrement2(MemcachedClient client) {
 
 void main() {
   setupLogger();
-//  group('TextMutateTest:', () {
-//    MemcachedClient client;
-//    setUp(() => m.prepareTextClient().then((c) => client = c));
-//    tearDown(() => client.close());
-//    test('TestIncrement1', () => testIncrement1(client));
-//    test('TestIncrement2', () => testIncrement2(client));
-//    test('TestDecrement1', () => testDecrement1(client));
-//    test('TestDecrement2', () => testDecrement2(client));
-//  });
-
-  group('BinaryMutateTest:', () {
-    MemcachedClient client;
-    setUp(() => m.prepareBinaryClient().then((c) => client = c));
+  group('CouchMutateTest:', () {
+    CouchClient client;
+    setUp(() => cc.prepareCouchClient().then((c) => client = c));
     tearDown(() => client.close());
     test('TestIncrement1', () => testIncrement1(client));
     test('TestIncrement2', () => testIncrement2(client));

@@ -2,7 +2,7 @@
 //History: Thu, Mar 07, 2013  02:09:05 PM
 // Author: hernichen
 
-part of rikulo_memcached;
+part of couchclient;
 
 /**
  * Holds information about a spatial view that can be queried in

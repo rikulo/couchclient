@@ -2,7 +2,7 @@
 //History: Wed, Mar 04, 2013  05:15:19 PM
 // Author: hernichen
 
-part of rikulo_memcached;
+part of couchclient;
 
 class ConfigType extends Enum {
   /**

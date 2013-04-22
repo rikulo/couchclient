@@ -4,13 +4,14 @@
 
 import 'dart:async';
 import 'dart:utf';
-import 'dart:scalarlist';
+import 'dart:typeddata';
 import 'package:unittest/unittest.dart';
-import 'package:rikulo_memcached/memcached.dart';
-import 'MemcachedTestUtil.dart' as m;
+import 'package:memcached_client/memcached_client.dart';
+import 'package:couchclient/couchclient.dart';
+import 'CouchbaseTestUtil.dart' as cc;
 
 //Unconditonal set key0
-void testSet1(MemcachedClient client) {
+void testSet1(CouchClient client) {
   expect(client.set('key0', encodeUtf8('val0')), completion(isTrue));
 
   Future f1 = client.get('key0');
@@ -19,7 +20,7 @@ void testSet1(MemcachedClient client) {
 }
 
 //Unconditional set no matter key0 exists or not
-void testSet2(MemcachedClient client) {
+void testSet2(CouchClient client) {
   expect(client.set('key0', encodeUtf8('val1')), completion(isTrue));
   Future f1 = client.get('key0');
   f1.then((v) => expect(decodeUtf8(v.data), equals('val1')));
@@ -27,7 +28,7 @@ void testSet2(MemcachedClient client) {
 }
 
 //unconditional set Chinese text
-void testSet3(MemcachedClient client) {
+void testSet3(CouchClient client) {
   expect(client.set('key0', encodeUtf8('中文')), completion(isTrue));
   Future f1 = client.get('key0');
   f1.then((v) => expect(decodeUtf8(v.data), equals('中文')));
@@ -35,7 +36,7 @@ void testSet3(MemcachedClient client) {
 }
 
 //cas with Chinese text
-void testCas(MemcachedClient client) {
+void testCas(CouchClient client) {
   Future f1 = client.gets('key0');
   f1.then((v) {
     expect(decodeUtf8(v.data), equals('中文'));
@@ -46,13 +47,13 @@ void testCas(MemcachedClient client) {
 }
 
 //key0 exist, cannot be added
-void testAdd1(MemcachedClient client) {
+void testAdd1(CouchClient client) {
   expect(client.set('key0', encodeUtf8('val0')), completion(isTrue));
   expect(client.add('key0', encodeUtf8('val0')), throwsA(equals(OPStatus.KEY_EXISTS)));
 }
 
 //key1 not exist, can be added
-void testAdd2(MemcachedClient client) {
+void testAdd2(CouchClient client) {
   expect(client.set('key1', encodeUtf8('val1')), completion(isTrue));
   //delete key1 to ensure Add will succeed
   expect(client.delete('key1'), completes);
@@ -68,7 +69,7 @@ void testAdd2(MemcachedClient client) {
 }
 
 //key0 exist, can be replaced (val1 -> val0)
-void testReplace1(MemcachedClient client) {
+void testReplace1(CouchClient client) {
   expect(client.replace('key0', encodeUtf8('val0')), completion(isTrue));
   Future f1 = client.get('key0');
   f1.then((v) => expect(decodeUtf8(v.data), equals('val0')));
@@ -76,12 +77,12 @@ void testReplace1(MemcachedClient client) {
 }
 
 //key1 not exist, cannot replace
-void testReplace2(MemcachedClient client) {
+void testReplace2(CouchClient client) {
   expect(client.replace('key1', encodeUtf8('val0')), throwsA(equals(OPStatus.KEY_NOT_FOUND)));
 }
 
 //key0 exist, can be prepend (val0 -> pre0val0)
-void testPrepend1(MemcachedClient client) {
+void testPrepend1(CouchClient client) {
   expect(client.prepend('key0', encodeUtf8('pre0')), completion(isTrue));
   Future f1 = client.get('key0');
   f1.then((v) => expect(decodeUtf8(v.data), equals('pre0val0')));
@@ -89,12 +90,12 @@ void testPrepend1(MemcachedClient client) {
 }
 
 //key1 not exist, cannot prepend
-void testPrepend2(MemcachedClient client) {
+void testPrepend2(CouchClient client) {
   expect(client.prepend('key1', encodeUtf8('pre0')), throwsA(equals(OPStatus.ITEM_NOT_STORED)));
 }
 
 //key0 exist, can be append (pre0val0 -> pre0val0app0)
-void testAppend1(MemcachedClient client) {
+void testAppend1(CouchClient client) {
   expect(client.append('key0', encodeUtf8('app0')), completion(isTrue));
   Future f1 = client.get('key0');
   f1.then((v) => expect(decodeUtf8(v.data), equals('pre0val0app0')));
@@ -102,33 +103,15 @@ void testAppend1(MemcachedClient client) {
 }
 
 //key1 not exist, cannot append
-void testAppend2(MemcachedClient client) {
+void testAppend2(CouchClient client) {
   expect(client.append('key1', encodeUtf8('pre0')), throwsA(equals(OPStatus.ITEM_NOT_STORED)));
 }
 
 void main() {
   setupLogger();
-  group('TextStoreTest:', () {
-    MemcachedClient client;
-    setUp(() => m.prepareTextClient().then((c) => client = c));
-    tearDown(() => client.close());
-    test('TestSet1', () => testSet1(client));
-    test('TestSet2', () => testSet2(client));
-    test('TestSet3', () => testSet3(client));
-    test('TestCas', () => testCas(client));
-    test('TestAdd1', () => testAdd1(client));
-    test('TestAdd2', () => testAdd2(client));
-    test('TestReplace1', () => testReplace1(client));
-    test('TestReplace2', () => testReplace2(client));
-    test('TestPrepend1', () => testPrepend1(client));
-    test('TestPrepend2', () => testPrepend2(client));
-    test('TestAppend1', () => testAppend1(client));
-    test('TestAppend2', () => testAppend2(client));
-  });
-
-  group('BinaryStoreTest:', () {
-    MemcachedClient client;
-    setUp(() => m.prepareBinaryClient().then((c) => client = c));
+  group('CouchStoreTest:', () {
+    CouchClient client;
+    setUp(() => cc.prepareCouchClient().then((c) => client = c));
     tearDown(() => client.close());
     test('TestSet1', () => testSet1(client));
     test('TestSet2', () => testSet2(client));

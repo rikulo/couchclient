@@ -5,11 +5,12 @@
 import 'dart:async';
 import 'dart:utf';
 import 'package:unittest/unittest.dart';
-import 'package:rikulo_memcached/memcached.dart';
-import 'MemcachedTestUtil.dart' as m;
+import 'package:memcached_client/memcached_client.dart';
+import 'package:couchclient/couchclient.dart';
+import 'CouchbaseTestUtil.dart' as cc;
 
 //get a key
-void testGet1(MemcachedClient client) {
+void testGet1(CouchClient client) {
   expect(client.set('key0', encodeUtf8('val0')), completion(isTrue));
 
   Future f1 = client.get('key0');
@@ -21,12 +22,12 @@ void testGet1(MemcachedClient client) {
 }
 
 //get an inexisting key
-void testGet2(MemcachedClient client) {
+void testGet2(CouchClient client) {
   expect(client.get('key101'), throwsA(equals(OPStatus.KEY_NOT_FOUND)));
 }
 
 //get multiple key
-void testGetAll(MemcachedClient client) {
+void testGetAll(CouchClient client) {
   int count = 2;
   for (int j = 0; j < count; ++j) {
     expect(client.set('key$j', encodeUtf8('val$j')), completion(isTrue));
@@ -54,7 +55,7 @@ void testGetAll(MemcachedClient client) {
 }
 
 //gets a key; sould return with cas token.
-void testGets1(MemcachedClient client) {
+void testGets1(CouchClient client) {
   expect(client.set('key0', encodeUtf8('val0')), completion(isTrue));
 
   Future f1 = client.gets('key0');
@@ -66,12 +67,12 @@ void testGets1(MemcachedClient client) {
 }
 
 //gets an inexisting key
-void testGets2(MemcachedClient client) {
+void testGets2(CouchClient client) {
   expect(client.gets('key101'), throwsA(equals(OPStatus.KEY_NOT_FOUND)));
 }
 
 //gets multiple key; should return with cas tokens.
-void testGetsAll(MemcachedClient client) {
+void testGetsAll(CouchClient client) {
   int count = 20;
   for (int j = 0; j < count; ++j) {
     expect(client.set('key$j', encodeUtf8('val$j')), completion(isTrue));
@@ -101,35 +102,17 @@ void testGetsAll(MemcachedClient client) {
 void main() {
   setupLogger();
 
-//  Future f = m.prepareTextClient().then((c) {
-//    testGetAll(c);
-//  });
-//
-//  expect(f, completes);
-
-  group('TextRetrieveTest:', () {
-    MemcachedClient client;
-    setUp(() => m.prepareTextClient().then((c) => client = c));
+  group('CouchRetrieveTest:', () {
+    CouchClient client;
+    setUp(() => cc.prepareCouchClient().then((c) => client = c));
     tearDown(() => client.close());
-//    test('TestGet1', () => testGet1(client));
+    test('TestGet1', () => testGet1(client));
     test('TestGet2', () => testGet2(client));
-//    test('TestGetAll', () => testGetAll(client));
-//    test('TestGets1', () => testGets1(client));
-//    test('TestGets2', () => testGets2(client));
-//    test('TestGetsAll', () => testGetsAll(client));
+    test('TestGetAll', () => testGetAll(client));
+    test('TestGets1', () => testGets1(client));
+    test('TestGets2', () => testGets2(client));
+    test('TestGetsAll', () => testGetsAll(client));
   });
-
-//  group('BinaryRetrieveTest:', () {
-//    MemcachedClient client;
-//    setUp(() => m.prepareBinaryClient().then((c) => client = c));
-//    tearDown(() => client.close());
-//    test('TestGet1', () => testGet1(client));
-//    test('TestGet2', () => testGet2(client));
-//    test('TestGetAll', () => testGetAll(client));
-//    test('TestGets1', () => testGets1(client));
-//    test('TestGets2', () => testGets2(client));
-//    test('TestGetsAll', () => testGetsAll(client));
-//  });
 
 }
 

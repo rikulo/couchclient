@@ -2,7 +2,7 @@
 //History: Wed, Mar 05, 2013  04:22:31 PM
 // Author: hernichen
 
-part of rikulo_memcached;
+part of couchclient;
 
 class ConfigParserJson {
   static const String NAME_ATTR = "name";

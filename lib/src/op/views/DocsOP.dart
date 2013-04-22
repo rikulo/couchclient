@@ -2,7 +2,7 @@
 //History: Tue, Mar 12, 2013  02:19:43 PM
 // Author: hernichen
 
-part of rikulo_memcached;
+part of couchclient;
 
 abstract class DocsOP extends GetHttpOP {
   final Completer<ViewResponse> _cmpl; //completer to complete the future of this operation

@@ -2,7 +2,7 @@
 //History: Thu, Mar 21, 2013  09:34:10 AM
 // Author: hernichen
 
-part of rikulo_memcached;
+part of couchclient;
 
 /**
  * An Http channel that sends OP to Http server and receive Http response.

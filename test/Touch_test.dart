@@ -5,10 +5,11 @@
 import 'dart:async';
 import 'dart:utf';
 import 'package:unittest/unittest.dart';
-import 'package:rikulo_memcached/memcached.dart';
-import 'MemcachedTestUtil.dart' as m;
+import 'package:memcached_client/memcached_client.dart';
+import 'package:couchclient/couchclient.dart';
+import 'CouchbaseTestUtil.dart' as cc;
 
-void testTouch(MemcachedClient client) {
+void testTouch(CouchClient client) {
   expect(client.set('key100', encodeUtf8('val100')), completion(isTrue));
   Future f1 = client.get('key100')
     .then((val) {
@@ -26,15 +27,9 @@ void testTouch(MemcachedClient client) {
 
 void main() {
   setupLogger();
-  group('TextTouchTest:', () {
-    MemcachedClient client;
-    setUp(() => m.prepareTextClient().then((c) => client = c));
-    tearDown(() => client.close());
-    test('TestTouch', () => testTouch(client));
-  });
   group('BinaryTouchTest:', () {
-    MemcachedClient client;
-    setUp(() => m.prepareBinaryClient().then((c) => client = c));
+    CouchClient client;
+    setUp(() => cc.prepareCouchClient().then((c) => client = c));
     tearDown(() => client.close());
     test('TestTouch', () => testTouch(client));
   });

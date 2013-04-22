@@ -2,7 +2,7 @@
 //History: Mon, Mar 04, 2013  05:10:31 PM
 // Author: hernichen
 
-part of rikulo_memcached;
+part of couchclient;
 
 abstract class Config {
   HashAlgorithm get hashAlgorithm;

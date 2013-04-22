@@ -1,4 +1,4 @@
-part of rikulo_memcached;
+part of couchclient;
 
 /**
  * The protocol operation type.

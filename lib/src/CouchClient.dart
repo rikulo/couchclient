@@ -1,4 +1,4 @@
-part of rikulo_memcached;
+part of couchclient;
 
 abstract class CouchClient implements MemcachedClient {
   /**
@@ -33,17 +33,28 @@ abstract class CouchClient implements MemcachedClient {
    */
   Future<ViewResponse> query(AbstractView view, Query query);
 
+  /**
+   * Observe a document with the specified key and check its persistency and
+   * replicas status in the cluster.
+   *
+   * + [key] - key of the document
+   * + [cas] - expected version of the observed document; null to ignore it. If
+   *   specified and the document has been updated, ObserverStatus.MODIFIED
+   *   would be returned in ObserveResult.status field.
+   */
+  Future<Map<MemcachedNode, ObserveResult>> observe(String key, [int cas]);
+
   static Future<CouchClient> connect(CouchbaseConnectionFactory factory)
-  => _CouchClientImpl.connect(factory);
+  => new Future.sync(()=>_CouchClientImpl.connect(factory));
 }
 
-class _CouchClientImpl extends _MemcachedClientImpl implements CouchClient {
+class _CouchClientImpl extends MemcachedClientImpl implements CouchClient {
   ViewConnection _viewConn;
   CouchbaseConnectionFactory _connFactory;
+  Logger _logger;
 
   static Future<CouchClient> connect(CouchbaseConnectionFactory factory) {
-    Future<Config> configf = factory.vbucketConfig;
-    return configf.then((config) {
+    return factory.vbucketConfig.then((config) {
       ViewConnection viewConn = null;
       List<SocketAddress> saddrs = _toSocketAddresses(config.servers);
       if (config.configType == ConfigType.COUCHBASE) {
@@ -88,7 +99,7 @@ class _CouchClientImpl extends _MemcachedClientImpl implements CouchClient {
         _connFactory = connFactory,
         super(memcachedConn, connFactory) {
 
-    _logger = initLogger('couchbase', this);
+    _logger = initLogger('couchclient', this);
   }
 
   Future<bool> putDesignDoc(DesignDoc doc) {
@@ -134,6 +145,26 @@ class _CouchClientImpl extends _MemcachedClientImpl implements CouchClient {
       return _queryNoDocs(view, query);
     }
   }
+
+  Future<Map<MemcachedNode, ObserveResult>> observe(String key, [int cas])
+  => _connFactory.vbucketConfig
+       .then((Config cfg) {
+         VbucketNodeLocator locator0 = locator;
+         int vb = locator0.getVbucketIndex(key);
+         List<MemcachedNode> nodes = new List();
+         MemcachedNode primary = locator0.getServerByIndex(cfg.getMaster(vb));
+         nodes.add(primary);
+         for (int j = 0, repCount = cfg.replicasCount; j < repCount; ++j) {
+           int replica = cfg.getReplica(vb, j);
+           if (replica >= 0)
+             nodes.add(locator0.getServerByIndex(replica));
+         }
+         return handleBroadcastOperation(() => opFactory.newObserveOP(key, cas), nodes.iterator)
+           .then((results) {
+             results[primary].isPrimary = true;
+             return results;
+           });
+       });
 
   Future<ViewResponseWithDocs> _queryWithDocs(AbstractView view, Query query) {
     WithDocsOP op = new WithDocsOP(view, query);

@@ -2,7 +2,7 @@
 //History: Thu, Mar 07, 2013  02:35:43 PM
 // Author: hernichen
 
-part of rikulo_memcached;
+part of couchclient;
 
 class GetDesignDocOP extends GetHttpOP {
   final Completer<DesignDoc> _cmpl; //completer to complete the future of this operation

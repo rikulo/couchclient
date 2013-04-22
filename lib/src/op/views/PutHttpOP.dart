@@ -2,7 +2,7 @@
 //History: Thu, Mar 07, 2013  02:43:41 PM
 // Author: hernichen
 
-part of rikulo_memcached;
+part of couchclient;
 
 abstract class PutHttpOP extends HttpOP {
   final String value;

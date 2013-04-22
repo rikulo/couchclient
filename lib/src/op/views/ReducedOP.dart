@@ -2,7 +2,7 @@
 //History: Tue, Mar 12, 2013  02:19:43 PM
 // Author: hernichen
 
-part of rikulo_memcached;
+part of couchclient;
 
 class ReducedOP extends DocsOP {
   ReducedOP(AbstractView view, Query query, [int msecs])

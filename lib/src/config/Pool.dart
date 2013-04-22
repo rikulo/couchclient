@@ -2,7 +2,7 @@
 //History: Wed, Mar 04, 2013  05:22:30 PM
 // Author: hernichen
 
-part of rikulo_memcached;
+part of couchclient;
 
 /**
  * A colletion of [Bucket]s.

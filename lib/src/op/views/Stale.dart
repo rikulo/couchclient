@@ -1,4 +1,4 @@
-part of rikulo_memcached;
+part of couchclient;
 
 /**
  * An enum containing the possible values for the stale

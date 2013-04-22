@@ -6,7 +6,7 @@ import 'dart:async';
 import 'dart:uri';
 import 'dart:utf';
 import 'package:unittest/unittest.dart';
-import 'package:rikulo_memcached/memcached.dart';
+import 'package:couchclient/couchclient.dart';
 
 //test getBucketConfig
 void testGetBucketConfig(ConfigProvider provider) {
@@ -23,7 +23,7 @@ void testServers(ConfigProvider provider, String bucketname) {
 }
 
 String REST_USER = 'Administrator';
-String REST_PWD = '741852';//'password';
+String REST_PWD = '123456';//'password';
 String DEFAULT_BUCKET_NAME = 'default';
 
 void main() {
@@ -34,10 +34,8 @@ void main() {
     Uri baseUri = Uri.parse(base);
     baseList.add(baseUri);
     setUp(() => provider = new ConfigProvider(baseList, REST_USER, REST_PWD));
-//    tearDown(() => client.close());
     test('TestServers0', () => testServers(provider, 'default'));
     test('TestServers1', () => testServers(provider, 'beer-sample'));
-//    test('TestGetBucketConfig', () => testGetBucketConfig(provider));
   });
 }
 

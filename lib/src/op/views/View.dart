@@ -2,7 +2,7 @@
 //History: Thu, Mar 07, 2013  02:09:05 PM
 // Author: hernichen
 
-part of rikulo_memcached;
+part of couchclient;
 
 class View extends AbstractView {
   final bool _map;

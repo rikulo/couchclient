@@ -4,21 +4,22 @@
 
 import 'dart:async';
 import 'dart:utf';
-import 'dart:scalarlist';
+import 'dart:typeddata';
 import 'package:unittest/unittest.dart';
-import 'package:rikulo_memcached/memcached.dart';
-import 'MemcachedTestUtil.dart' as m;
+import 'package:memcached_client/memcached_client.dart';
+import 'package:couchclient/couchclient.dart';
+import 'CouchbaseTestUtil.dart' as cc;
 
 //Unconditonal set key0
-void testSaslMechs0(MemcachedClient client) {
+void testSaslMechs0(CouchClient client) {
   Future f1 = client.listSaslMechs();
   expect(f1, completion(equals(['PLAIN'])));
 }
 
 void main() {
   group('SaslMechsTest:', () {
-    MemcachedClient client;
-    setUp(() => m.prepareBinaryClient().then((c) => client = c));
+    CouchClient client;
+    setUp(() => cc.prepareCouchClient().then((c) => client = c));
     tearDown(() => client.close());
     test('TestSaslMechs0', () => testSaslMechs0(client));
   });

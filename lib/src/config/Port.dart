@@ -2,7 +2,7 @@
 //History: Wed, Mar 04, 2013  05:31:09 PM
 // Author: hernichen
 
-part of rikulo_memcached;
+part of couchclient;
 
 class Port extends Enum {
   static const Port direct = const Port('direct', 0);

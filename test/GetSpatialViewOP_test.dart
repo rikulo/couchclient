@@ -6,7 +6,7 @@ import 'dart:async';
 import 'dart:uri';
 import 'dart:utf';
 import 'package:unittest/unittest.dart';
-import 'package:rikulo_memcached/memcached.dart';
+import 'package:couchclient/couchclient.dart';
 import 'CouchbaseTestUtil.dart' as cc;
 
 void testGetSpatialViewOP0(CouchClient client, String designDocName, String viewName) {

@@ -8,7 +8,7 @@ import 'dart:utf';
 import 'dart:uri';
 import 'package:logging/logging.dart';
 import 'package:unittest/unittest.dart';
-import 'package:rikulo_memcached/memcached.dart';
+import 'package:couchclient/couchclient.dart';
 
 CouchbaseConnectionFactory _fact
 = new CouchbaseConnectionFactory(

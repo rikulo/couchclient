@@ -2,7 +2,7 @@
 //History: Thu, Mar 08, 2013  10:36:35 AM
 // Author: hernichen
 
-part of rikulo_memcached;
+part of couchclient;
 
 class GetViewOP extends GetHttpOP {
   final Completer<View> _cmpl; //completer to complete the future of this operation

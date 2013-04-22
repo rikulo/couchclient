@@ -2,7 +2,7 @@
 //History: Wed, Mar 04, 2013  05:55:10 PM
 // Author: hernichen
 
-part of rikulo_memcached;
+part of couchclient;
 
 class ConfigDifference {
   List<String> serversAdded;

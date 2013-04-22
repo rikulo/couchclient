@@ -2,16 +2,16 @@
 //History: Wed, Mar 05, 2013  06:16:22 PM
 // Author: hernichen
 
-part of rikulo_memcached;
+part of couchclient;
 
 class ConfigFactory {
   Config parse(String data) {
     Map jo = json.parse(data);
   }
 
-  Config parseJson(Map jo)
-  => !jo.containsKey('vBucketServerMap') ?
-        parseCacheJson(jo) : parseEpJson(jo);
+  Config parseJson(Map jo) =>
+      !jo.containsKey('vBucketServerMap') ?
+          parseCacheJson(jo) : parseEpJson(jo);
 
   Config parseCacheJson(Map jo) {
     List<String> nodes = jo['nodes'];

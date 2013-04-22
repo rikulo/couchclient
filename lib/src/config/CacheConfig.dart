@@ -2,7 +2,7 @@
 //History: Wed, Mar 05, 2013  06:50:16 PM
 // Author: hernichen
 
-part of rikulo_memcached;
+part of couchclient;
 
 class CacheConfig implements Config {
   final int serversCount;
@@ -89,8 +89,7 @@ class CacheConfig implements Config {
     return diff;
   }
 
-  ConfigType get configType
-  => ConfigType.MEMCACHE;
+  ConfigType get configType => ConfigType.MEMCACHE;
 
   List<Uri> get couchServers {
     throw new UnsupportedError("No couch port for cache buckets");

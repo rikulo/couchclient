@@ -6,7 +6,8 @@ import 'dart:async';
 import 'dart:uri';
 import 'dart:utf';
 import 'package:unittest/unittest.dart';
-import 'package:rikulo_memcached/memcached.dart';
+import 'package:memcached_client/memcached_client.dart';
+import 'package:couchclient/couchclient.dart';
 import 'CouchbaseTestUtil.dart' as cc;
 
 //test getDesignDocOP

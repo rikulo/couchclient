@@ -2,7 +2,7 @@
 //History: Wed, Mar 04, 2013  05:16:43 PM
 // Author: hernichen
 
-part of rikulo_memcached;
+part of couchclient;
 
 /**
  * Vbucket.

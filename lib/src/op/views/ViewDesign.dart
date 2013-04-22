@@ -2,7 +2,7 @@
 //History: Thu, Mar 07, 2013  02:19:30 PM
 // Author: hernichen
 
-part of rikulo_memcached;
+part of couchclient;
 
 /**
  * The ViewDesign object represents a view to be stored and retrieved

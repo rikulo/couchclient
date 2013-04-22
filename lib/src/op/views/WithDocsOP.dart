@@ -2,7 +2,7 @@
 //History: Tue, Mar 12, 2013  02:19:43 PM
 // Author: hernichen
 
-part of rikulo_memcached;
+part of couchclient;
 
 class WithDocsOP extends DocsOP {
   WithDocsOP(AbstractView view, Query query, [int msecs])

@@ -2,7 +2,7 @@
 //History: Wed, Mar 04, 2013  05:40:31 PM
 // Author: hernichen
 
-part of rikulo_memcached;
+part of couchclient;
 
 class Status extends Enum {
   static const Status healthy = const Status('healthy', 0);

@@ -6,32 +6,26 @@ import 'dart:async';
 import 'dart:utf';
 import 'package:logging/logging.dart';
 import 'package:unittest/unittest.dart';
-import 'package:rikulo_memcached/memcached.dart';
-import 'MemcachedTestUtil.dart' as m;
+import 'package:memcached_client/memcached_client.dart';
+import 'package:couchclient/couchclient.dart';
+import 'CouchbaseTestUtil.dart' as cc;
 
 //delete key3
-void testDelete1(MemcachedClient client) {
+void testDelete1(CouchClient client) {
   expect(client.set('key3', encodeUtf8('va13')), completion(isTrue));
   expect(client.delete('key3'), completion(isTrue));
 }
 
 //delete inexist key3; should throw NOT_FOUND
-void testDelete2(MemcachedClient client) {
+void testDelete2(CouchClient client) {
   expect(client.delete('key3'), throwsA(equals(OPStatus.KEY_NOT_FOUND)));
 }
 
 void main() {
   setupLogger(level: Level.ALL);
-  group('TextDeleteTest:', () {
-    MemcachedClient client;
-    setUp(() => m.prepareTextClient().then((c) => client = c));
-    tearDown(() => client.close());
-    test('TestDelete1', () => testDelete1(client));
-    test('TestDelete2', () => testDelete2(client));
-  });
-  group('BinaryDeleteTest:', () {
-    MemcachedClient client;
-    setUp(() => m.prepareBinaryClient().then((c) => client = c));
+  group('CouchDeleteTest:', () {
+    CouchClient client;
+    setUp(() => cc.prepareCouchClient().then((c) => client = c));
     tearDown(() => client.close());
     test('TestDelete1', () => testDelete1(client));
     test('TestDelete2', () => testDelete2(client));
