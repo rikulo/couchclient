@@ -6,15 +6,36 @@ import 'dart:async';
 import 'dart:uri';
 import 'dart:utf';
 import 'package:unittest/unittest.dart';
+import 'package:memcached_client/memcached_client.dart';
 import 'package:couchclient/couchclient.dart';
 import 'CouchbaseTestUtil.dart' as cc;
 
+String VIEW = '''
+function (doc, meta) {
+  if (doc.type && doc.name && doc.type == "beer") {
+    emit(doc.name, meta.id);
+  }
+}''';
+
+Future writeDesignView(CouchClient client, String designDocName, String viewName) {
+  var fact = new CouchbaseConnectionFactory(
+      [Uri.parse("http://localhost:8091/pools")], "beer-sample", "");
+
+  // Prepare View Design
+  ViewDesign vd = new ViewDesign(viewName, VIEW);
+  // Prepare Design document
+  DesignDoc dd = new DesignDoc(designDocName, views: [vd]);
+
+  return client.addDesignDoc(dd);
+}
+
 //test getViewOP
 void testWithDocsOP0(CouchClient client, String designDocName, String viewName) {
-  Future f = client.getView(designDocName, viewName);
-  Future f2 = f.then((view) {
+  Future f = writeDesignView(client, designDocName, viewName)
+  .then((_) => client.getView(designDocName, viewName))
+  .then((view) {
     expect(view, isNotNull);
-    expect(view.viewName, equals("brewery_beers"));
+    expect(view.viewName, equals("by_name"));
     expect(view.designDocName, equals("beer"));
     expect(view.bucketName, equals("beer-sample"));
     expect(view.hasMap, isTrue);
@@ -24,15 +45,15 @@ void testWithDocsOP0(CouchClient client, String designDocName, String viewName) 
       ..descending = true
       ..includeDocs = true;
     return client.query(view, query);
-  });
-  f2.then((resp) {
+  })
+  .then((resp) {
     print("---------------------------");
+    expect(resp.rows.length, equals(10));
     for(ViewRowWithDocs row in resp.rows) {
-      print(row);
+      expect(row.doc, isNotNull);
     }
   });
   expect(f, completes);
-  expect(f2, completes);
 }
 
 String REST_USER = 'Administrator';
@@ -40,11 +61,12 @@ String REST_PWD = 'password';
 String DEFAULT_BUCKET_NAME = 'default';
 
 void main() {
+  setupLogger();
   group('WithDocsOPTest:', () {
     CouchClient client;
     setUp(() => cc.prepareCouchClient().then((c) => client = c));
     tearDown(() => client.close());
-    test('TestGetViewOP0', () => testWithDocsOP0(client, 'beer', 'brewery_beers'));
+    test('TestGetViewOP0', () => testWithDocsOP0(client, 'beer', 'by_name'));
   });
 }
 

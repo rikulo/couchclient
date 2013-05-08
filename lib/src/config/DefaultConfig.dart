@@ -33,8 +33,7 @@ class DefaultConfig implements Config {
   => servers[serverIndex];
 
   //Vbucket access
-  int getVbucketByKey(String key)
-  => mask & hashAlgorithm(key);
+  int getVbucketByKey(String key) => mask & hashAlgorithm(key);
 
   int getMaster(int vbucketIndex)
   => vbuckets[vbucketIndex].master;

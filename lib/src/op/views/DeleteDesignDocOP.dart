@@ -19,7 +19,7 @@ class DeleteDesignDocOP extends DeleteHttpOP {
   }
 
   void processResponse(String base) {
-    print("DeleteDesignDocOP:base->[$base]");
+    _logger.finest("DeleteDesignDocOP:base->[$base]");
     if (!base.isEmpty) {
       Map jo = json.parse(base);
       bool ok = jo['ok'];

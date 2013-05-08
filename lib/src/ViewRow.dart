@@ -30,10 +30,7 @@ abstract class ViewRow {
         "Geometry information");
   }
 
-  dynamic get doc {
-    throw new UnsupportedError("This view result doesn't contain "
-        "documents");
-  }
+  get doc => null;
 
   static String _valid(String f)
   => f != null && 'null' == f ? null : f;

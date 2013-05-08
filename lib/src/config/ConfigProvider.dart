@@ -25,7 +25,7 @@ class ConfigProvider {
       : this.baseList = baseList,
         restUsr = user,
         restPwd = pass {
-    _logger = initLogger('couchbase.config', this);
+    _logger = initLogger('couchclient.config', this);
   }
 
   Future<Bucket> getBucketConfig(String bucketname) {
@@ -48,7 +48,7 @@ class ConfigProvider {
   Future<Config> getLastestConfig(String bucketname) =>
       getBucketConfig(bucketname).then((Bucket bucket) => bucket.config);
 
-  String getAnonymousAuthBucket() => ANONYMOUS_AUTH_BUCKET;
+  String get anonymousAuthBucket => ANONYMOUS_AUTH_BUCKET;
 
   void finishResubscribe() {
     monitors.clear();

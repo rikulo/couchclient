@@ -8,7 +8,7 @@ part of couchclient;
  * Holds information about a spatial view that can be queried in
  * Couchbase Server.
  */
-class SpatialView extends AbstractView {
+class SpatialView extends ViewBase {
 
   SpatialView(String bucketName, String designDocName, String viewName)
       : super(bucketName, designDocName, viewName);

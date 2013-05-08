@@ -2,21 +2,17 @@ part of couchclient;
 
 class ViewNode {
   final SocketAddress socketAddress;
-  final String _user;
-  final String _pass;
   final int _opTimeout;
   final HttpOPChannel _opChannel;
 
   Logger _logger;
   bool _closing = false;
 
-  ViewNode(SocketAddress saddr, int opTimeout, String user, String pass)
+  ViewNode(SocketAddress saddr, int opTimeout, AuthDescriptor authDescriptor)
       : socketAddress = saddr,
-        _user = user,
-        _pass = pass,
         _opTimeout = opTimeout,
-        _opChannel = new HttpOPChannel(saddr, user, pass) {
-    _logger = initLogger('couchbase', this);
+        _opChannel = new HttpOPChannel(saddr, authDescriptor) {
+    _logger = initLogger('couchclient.spi', this);
   }
 
   int get opTimeout => _opTimeout;

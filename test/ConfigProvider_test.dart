@@ -30,10 +30,11 @@ void main() {
   group('ConfigProviderTest:', () {
     ConfigProvider provider;
     List<Uri> baseList = new List();
-    String base = 'http://localhost:8091/pools';
+    String base = 'http://127.0.0.1:8091/pools';
     Uri baseUri = Uri.parse(base);
     baseList.add(baseUri);
     setUp(() => provider = new ConfigProvider(baseList, REST_USER, REST_PWD));
+    test('TestBucketConfig', () => testGetBucketConfig(provider));
     test('TestServers0', () => testServers(provider, 'default'));
     test('TestServers1', () => testServers(provider, 'beer-sample'));
   });

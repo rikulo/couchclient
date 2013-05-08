@@ -31,7 +31,7 @@ class CouchbaseConnectionFactory extends BinaryConnectionFactory {
 
   String _bucket;
   String _password;
-  final AuthDescriptor _authDescriptor;
+  AuthDescriptor _authDescriptor;
 
   Logger _logger;
   ConfigProvider _configProvider;
@@ -50,17 +50,17 @@ class CouchbaseConnectionFactory extends BinaryConnectionFactory {
    * minimum reconnect interval in milliseconds.
    */
   int minReconnectInterval = DEFAULT_MIN_RECONNECT_INTERVAL;
-  int obsPollInterval = DEFAULT_OBS_POLL_INTERVAL;
-  int obsPollMax = DEFAULT_OBS_POLL_MAX;
+  int observePollInterval = DEFAULT_OBS_POLL_INTERVAL;
+  int observePollMax = DEFAULT_OBS_POLL_MAX;
 
   CouchbaseConnectionFactory(List<Uri> baseList, String bucket, String password)
       : _viewTimeout = 75000,
         _authDescriptor = new AuthDescriptor(["PLAIN"], bucket, password),
-        super(KETAMA_HASH) {
+        super(NATIVE_HASH) {
 
-    _logger = initLogger('couchbase', this);
-    _bucket = _authDescriptor.bucket;
-    _password = _authDescriptor.password;
+    _logger = initLogger('couchclient', this);
+    _bucket = bucket;
+    _password = password;
     _storedBaseList = new List();
     for(Uri bu in baseList) {
       if (!bu.isAbsolute)
@@ -107,7 +107,16 @@ class CouchbaseConnectionFactory extends BinaryConnectionFactory {
   FailureMode get failureMode => FailureMode.Retry;
 
   //@Override
-  AuthDescriptor get authDescriptor => _authDescriptor;
+  AuthDescriptor get authDescriptor {
+    if (_configProvider.anonymousAuthBucket != _bucket && _bucket != null) {
+      if (_authDescriptor == null) {
+        _authDescriptor = new AuthDescriptor(["PLAIN"], _bucket, _password);
+      }
+      return _authDescriptor;
+    } else {
+      return null;
+    }
+  }
 
   String get bucketName => _bucket;
 
@@ -130,8 +139,7 @@ class CouchbaseConnectionFactory extends BinaryConnectionFactory {
   }
 
   ViewNode createViewNode(SocketAddress saddr) =>
-      new ViewNode(saddr, opTimeout, authDescriptor.bucket,
-                   authDescriptor.password);
+      new ViewNode(saddr, opTimeout, authDescriptor);
 
   ViewConnection createViewConnection(List<SocketAddress> saddrs) =>
       new ViewConnection(saddrs, this);
@@ -150,11 +158,13 @@ class CouchbaseConnectionFactory extends BinaryConnectionFactory {
 
   /**
    * Checks whether we have enough nodes for requested persistence.
+   *
+   * + [persistTo] - the number of nodes expected to persist to.
    */
-  Future<bool> checkConfigAgainstPersistence(PersistTo pers) {
+  Future<bool> checkConfigAgainstPersistence(PersistTo persistTo) {
     return vbucketConfig.then((config) {
       int nodeCount = config.serversCount;
-      if(pers.value > nodeCount) {
+      if(persistTo.value > nodeCount) {
         _logger.fine("Currently, there are less nodes in the "
           "cluster than required to satisfy the persistence constraint.");
         return false;
@@ -165,11 +175,13 @@ class CouchbaseConnectionFactory extends BinaryConnectionFactory {
 
   /**
    * Checks whether we have enough nodes for requested replication.
+   *
+   * + [replicateTo] - the number of nodes expected to replicate to.
    */
-  Future<bool> checkConfigAgainstReplication(ReplicateTo repl) {
+  Future<bool> checkConfigAgainstReplication(ReplicateTo replicateTo) {
     return vbucketConfig.then((config) {
       int nodeCount = config.serversCount;
-      if(repl.value >= nodeCount) {
+      if(replicateTo.value >= nodeCount) {
         _logger.fine("Currently, there are less nodes in the "
           "cluster than required to satisfy the replication constraint.");
         return false;
@@ -177,6 +189,18 @@ class CouchbaseConnectionFactory extends BinaryConnectionFactory {
       return true;
     });
   }
+
+  /**
+   * Checks whether we have enough nodes for requested persistency and
+   * replication.
+   *
+   * + [persistTo] - the number of nodes expected to persist to.
+   * + [replicateTo] - the number of nodes expected to replicate to.
+   */
+  Future<bool> checkConfigAgainstDurability(PersistTo persistTo,
+      ReplicateTo replicateTo) =>
+      checkConfigAgainstPersistence(persistTo)
+      .then((ok) => !ok ? false : checkConfigAgainstReplication(replicateTo));
 
   /**
    * Check if a configuration update is needed.

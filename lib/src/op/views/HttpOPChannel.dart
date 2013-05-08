@@ -10,19 +10,17 @@ part of couchclient;
 class HttpOPChannel implements OPChannel<int, HttpOP> {
   Logger _logger;
   final OPQueue<int, HttpOP> _writeQ;
-  final String _user;
-  final String _pass;
+  final AuthDescriptor _authDescriptor;
   final Uri _baseUri;
 
   bool _closing = false; //Channel is closing
   HttpOP _writeOP; //current OP to be write into socket
 
-  HttpOPChannel(SocketAddress saddr, String user, String pass)
-      : _user = user,
-        _pass = pass,
+  HttpOPChannel(SocketAddress saddr, AuthDescriptor authDescriptor)
+      : _authDescriptor = authDescriptor,
         _writeQ = new OPQueueQueue(),
         _baseUri = Uri.parse("http://${saddr.host}:${saddr.port}") {
-    _logger = initLogger("couchbase.op.view", this);
+    _logger = initLogger("couchclient.op.view", this);
   }
 
   //@Override
@@ -145,7 +143,7 @@ class HttpOPChannel implements OPChannel<int, HttpOP> {
     HttpOP op = _writeOP;
     Uri cmd = op.cmd;
     HttpClient hc = new HttpClient();
-    Future<String> f = op.handleCommand(hc, _baseUri, cmd, _user, _pass);
+    Future<String> f = op.handleCommand(hc, _baseUri, cmd, _authDescriptor);
     f.then((String buf) {
       op.processResponse(buf);
     });

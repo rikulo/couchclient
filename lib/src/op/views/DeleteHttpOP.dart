@@ -6,8 +6,10 @@ part of couchclient;
 
 abstract class DeleteHttpOP extends HttpOP {
   Future<String> handleCommand(HttpClient hc, Uri baseUri, Uri cmd,
-        String user, String pass, [String value]) {
+      AuthDescriptor authDescriptor) {
     Completer<String> cmpl = new Completer();
+    final String user = authDescriptor == null ? null : authDescriptor.bucket;
+    final String pass = authDescriptor == null ? null : authDescriptor.password;
     Future<HttpResult> rf = HttpUtil.uriDelete(hc, baseUri, cmd, user, pass);
     //20130308, henrichen: Tricky! In "DELETE", Dart tends to complain
     //"AsyncError: 'HttpParserException: Connection closed while receiving data'"

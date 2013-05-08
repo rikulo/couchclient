@@ -9,12 +9,12 @@ part of couchclient;
  *
  * This class acts as a base class for both map/reduce views and spatial
  */
-abstract class AbstractView {
+abstract class ViewBase {
   final String viewName;
   final String designDocName;
   final String bucketName;
 
-  AbstractView(this.bucketName, this.designDocName, this.viewName);
+  ViewBase(this.bucketName, this.designDocName, this.viewName);
 
   /**
    * Checks if the view has a "map" method defined.

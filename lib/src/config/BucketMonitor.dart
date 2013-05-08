@@ -34,7 +34,7 @@ class BucketMonitor extends Observable {
    */
   BucketMonitor(this.cometStreamUri, String bucketname, this.httpUser,
       this.httpPass, ConfigParserJson configParser) {
-    _logger = initLogger('couchbase.config', this);
+    _logger = initLogger('couchclient.config', this);
     if (cometStreamUri == null) {
       throw new ArgumentError("cometStreamUri cannot be NULL");
     }

@@ -7,20 +7,17 @@ import 'dart:uri';
 import 'dart:utf';
 import 'package:unittest/unittest.dart';
 import 'package:couchclient/couchclient.dart';
+import 'package:memcached_client/memcached_client.dart';
 import 'CouchbaseTestUtil.dart' as cc;
 
 void testPutDesignDocOP0(CouchClient client, String designDocName) {
   ViewDesign view1 = new ViewDesign('xyzview', 'function(doc, meta) {emit([doc.brewery_id]);}');
-  List<ViewDesign> views = [view1];
-  expect(client.putDesignDoc(new DesignDoc(designDocName, views:views)), completion(true));
+  expect(client.addDesignDoc(new DesignDoc(designDocName, views:[view1])), completion(true));
 }
 
-String REST_USER = 'Administrator';
-String REST_PWD = 'password';
-String DEFAULT_BUCKET_NAME = 'default';
-
 void main() {
-  group('GetDesignDocOPTest:', () {
+  setupLogger();
+  group('PutDesignDocOPTest:', () {
     CouchClient client;
     setUp(() => cc.prepareCouchClient().then((c) => client = c));
     tearDown(() => client.close());

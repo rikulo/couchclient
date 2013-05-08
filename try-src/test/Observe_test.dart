@@ -2,13 +2,13 @@
 //History: Fri, Feb 22, 2013  04:06:21 PM
 // Author: henrichen
 
-import 'dart:async';
-import 'dart:uri';
-import 'dart:utf';
-import 'package:unittest/unittest.dart';
-import 'package:memcached_client/memcached_client.dart';
-import 'package:couchclient/couchclient.dart';
-import 'CouchbaseTestUtil.dart' as cc;
+import '../../../../../../../D:/Program/dart/dart-sdk/lib/async/async.dart';
+import '../../../../../../../D:/Program/dart/dart-sdk/lib/uri/uri.dart';
+import '../../../../../../../D:/Program/dart/dart-sdk/lib/utf/utf.dart';
+import '../../packages/unittest/unittest.dart';
+import '../../packages/memcached_client/memcached_client.dart';
+import '../../packages/couchclient/couchclient.dart';
+import '../../test/CouchbaseTestUtil.dart' as cc;
 
 //persist
 void testObserve1(CouchClient client) {

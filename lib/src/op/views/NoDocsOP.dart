@@ -5,11 +5,11 @@
 part of couchclient;
 
 class NoDocsOP extends DocsOP {
-  NoDocsOP(AbstractView view, Query query, [int msecs])
+  NoDocsOP(ViewBase view, Query query, [int msecs])
       : super(view, query, msecs);
 
   void processResponse(String base) {
-//    print("NoDocsOP:base->[$base]");
+    _logger.finest("NoDocsOP:base->[$base]");
     Map jo = json.parse(base);
     List<ViewRow> viewRows = new List();
     List<ViewRowError> errors = new List();
@@ -29,7 +29,7 @@ class NoDocsOP extends DocsOP {
       }
     }
     if (jo.containsKey('debug_info')) {
-      print('Debug View $view.uri: base');
+      _logger.fine('Debug View $view.uri: base');
     }
     if (jo.containsKey("errors")) {
       List<Map> errs = jo['errors'];

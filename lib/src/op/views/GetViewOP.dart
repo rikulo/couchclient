@@ -20,7 +20,7 @@ class GetViewOP extends GetHttpOP {
   }
 
   void processResponse(String base) {
-    print("GetViewOP:base->[$base]");
+    _logger.finest("GetViewOP:base->[$base]");
     Map jo = json.parse(base);
     Map<String, Map> viewsjo = jo['views'];
     if (viewsjo != null) {

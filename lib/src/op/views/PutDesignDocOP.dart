@@ -15,12 +15,11 @@ class PutDesignDocOP extends PutHttpOP {
   PutDesignDocOP(String bucketName, this.designDocName, String value)
       : _cmpl = new Completer(),
         super(value) {
-
     _cmd = Uri.parse('/$bucketName/_design/$designDocName');
   }
 
   void processResponse(String base) {
-    print("PutDesignDocOP: base->[$base]");
+    _logger.finest("PutDesignDocOP: base->[$base]");
     Map jo = json.parse(base);
     bool ok = jo['ok'];
     _cmpl.complete(ok != null && ok);

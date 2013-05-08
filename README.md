@@ -35,9 +35,52 @@ For more information, please refer to [Pub: Dependencies]
 
 ##Usage
 
-Using Rikulo Couchbase Client is straightforward.
+Using Rikulo Couchbase Client is straightforward. Connect to the server and
+use the client's APIs to access the database.
 
-    import "package:couchclient/couchclient.dart"; //Couchbase Client APIs
+    import "dart:uri";
+    import "dart:utf";
+    import "package:couchclient/couchclient.dart";
+
+    void main() {
+      // The unique key of the document
+      final String KEY = "beer_Wrath";
+
+      // The Json encoded document
+      final String VALUE =
+          '{"name":"Wrath","abv":9.0,'
+          '"type":"beer","brewery_id":"110f1a10e7",'
+          '"updated":"2010-07-22 20:00:20",'
+          '"description":"WRATH Belgian-style ",'
+          '"style":"Other Belgian-Style Ales",'
+          '"category":"Belgian and French Ale"}';
+
+      // Prepare connection factory
+      // Here aassume your Couchbase Server is installed on localhost
+      // Use "default" bucket with no password
+      var fact = new CouchbaseConnectionFactory(
+          [Uri.parse("http://localhost:8091/pools")], "default", "");
+
+      // Connect to server per the provided connection factory
+      CouchClient.connect(fact)
+      //when client is ready
+      .then((client) {
+        // Do a set
+        return client.set(KEY, encodeUtf8(VALUE))
+        // Check if set succeeded and show message
+        .then((ok) => print(ok ? "Set Succeeded" : "Set failed"))
+        // Then get the value back by key
+        .then((_) => client.get(KEY))
+        // Check if get data equals to set one
+        .then((val) => decodeUtf8(val.data) == VALUE)
+        // Show message
+        .then((ok) => print(ok ? "Get Succeeded" : "Get failed"))
+        // Close the client
+        .then((_) => client.close());
+      })
+      //catch all possible errors/exceptions
+      .catchError((err) => print('Exception: $err'));
+    }
 
 ##Notes to Contributors
 

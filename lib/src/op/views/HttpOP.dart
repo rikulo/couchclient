@@ -5,9 +5,14 @@
 part of couchclient;
 
 abstract class HttpOP {
+  Logger _logger;
   Uri _cmd; //command in a byte array
   OPState _state; //null is state 0
   int seq;
+
+  HttpOP() {
+    _logger = initLogger('couchclient.op.views', this);
+  }
 
   Uri get cmd
   => _cmd;
@@ -36,7 +41,7 @@ abstract class HttpOP {
   void processResponse(String result);
 
   Future<String> handleCommand(HttpClient hc, Uri baseUri, Uri cmd,
-      String user, String pass);
+      AuthDescriptor authDescriptor);
 
   /**
    * Transition to next state.

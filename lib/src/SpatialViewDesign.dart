@@ -20,11 +20,10 @@ class SpatialViewDesign {
   final String map;
 
   /**
-   * Create a ViewDesign with a name, map and reduce function.
+   * Create a SpatialViewDesign with a name and map function.
    *
-   * @param name the name of the view.
-   * @param map the map function of the view.
-   * @param reduce the reduce function of the view.
+   * + [name] - the name of the view.
+   * + [map] - the map function(in JavaScript script) of the view.
    */
   SpatialViewDesign(this.name, this.map);
 }

@@ -6,7 +6,7 @@ part of couchclient;
 
 abstract class DocsOP extends GetHttpOP {
   final Completer<ViewResponse> _cmpl; //completer to complete the future of this operation
-  final AbstractView view;
+  final ViewBase view;
 
   Future<ViewResponse> get future
   => _cmpl.future;

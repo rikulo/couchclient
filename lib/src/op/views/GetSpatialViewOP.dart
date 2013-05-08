@@ -20,7 +20,7 @@ class GetSpatialViewOP extends GetHttpOP {
   }
 
   void processResponse(String base) {
-    print("GetSpatialViewOP:base->[$base]");
+    _logger.finest("GetSpatialViewOP:base->[$base]");
     Map jo = json.parse(base);
     Map<String, Map> viewsjo = jo['spatial'];
     if (viewsjo != null) {

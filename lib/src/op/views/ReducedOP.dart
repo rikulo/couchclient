@@ -5,11 +5,11 @@
 part of couchclient;
 
 class ReducedOP extends DocsOP {
-  ReducedOP(AbstractView view, Query query, [int msecs])
+  ReducedOP(ViewBase view, Query query, [int msecs])
       : super(view, query, msecs);
 
   void processResponse(String base) {
-    print("ReducedOP:base->[$base]");
+    _logger.finest("ReducedOP:base->[$base]");
     Map jo = json.parse(base);
     List<ViewRow> viewRows = new List();
     List<ViewRowError> errors = new List();
@@ -22,7 +22,7 @@ class ReducedOP extends DocsOP {
       }
     }
     if (jo.containsKey('debug_info')) {
-      print('Debug View $view.uri: base');
+      _logger.finest('Debug View $view.uri: base');
     }
     if (jo.containsKey("errors")) {
       List<Map> errs = jo['errors'];

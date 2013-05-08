@@ -9,11 +9,16 @@ abstract class PutHttpOP extends HttpOP {
   PutHttpOP(this.value);
 
   Future<String> handleCommand(HttpClient hc, Uri baseUri, Uri cmd,
-        String user, String pass)
-  => HttpUtil.uriPut(hc, baseUri, cmd, user, pass, value, {'content-type' : 'application/json'})
-      .then((v) {
-        hc.close();
-        return v;
-      });
+      AuthDescriptor authDescriptor) {
+    final String user = authDescriptor == null ? null : authDescriptor.bucket;
+    final String pass = authDescriptor == null ? null : authDescriptor.password;
+    _logger.finest("user:$user, pass:$pass");
+    return HttpUtil.uriPut(hc, baseUri, cmd, user, pass, this.value,
+        {'content-type' : 'application/json'})
+    .then((v) {
+      hc.close();
+      return v;
+    });
+  }
 }
 

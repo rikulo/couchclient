@@ -10,10 +10,6 @@ import 'package:logging/logging.dart';
 import 'package:unittest/unittest.dart';
 import 'package:couchclient/couchclient.dart';
 
-CouchbaseConnectionFactory _fact
-= new CouchbaseConnectionFactory(
-    [Uri.parse("http://localhost:8091/pools")],
-    'beer-sample', '');
-
 Future<CouchClient> prepareCouchClient()
-=> CouchClient.connect(_fact);
+=> CouchClient.connect(
+    [Uri.parse("http://127.0.0.1:8091/pools")], 'beer-sample', '');

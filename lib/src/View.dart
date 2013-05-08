@@ -4,7 +4,7 @@
 
 part of couchclient;
 
-class View extends AbstractView {
+class View extends ViewBase {
   final bool _map;
   final bool _reduce;
 

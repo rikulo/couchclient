@@ -14,7 +14,7 @@ class BucketUpdateResponseHandler {
   Logger _logger;
 
   BucketUpdateResponseHandler() {
-    _logger = initLogger('couchbase.config', this);
+    _logger = initLogger('couchclient.config', this);
   }
 
   void messageReceived(String curChunk) {

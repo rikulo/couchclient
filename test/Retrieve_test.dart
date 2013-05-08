@@ -11,11 +11,11 @@ import 'CouchbaseTestUtil.dart' as cc;
 
 //get a key
 void testGet1(CouchClient client) {
-  expect(client.set('key0', encodeUtf8('val0')), completion(isTrue));
+  expect(client.set('key0', encodeUtf8('"val0"')), completion(isTrue));
 
   Future f1 = client.get('key0');
   f1.then((v) {
-    expect(decodeUtf8(v.data), equals('val0'));
+    expect(decodeUtf8(v.data), equals('"val0"'));
     expect(v.cas, isNull);
   });
   expect(f1, completes);
@@ -28,7 +28,7 @@ void testGet2(CouchClient client) {
 
 //get multiple key
 void testGetAll(CouchClient client) {
-  int count = 2;
+  int count = 1;
   for (int j = 0; j < count; ++j) {
     expect(client.set('key$j', encodeUtf8('val$j')), completion(isTrue));
   }
@@ -99,6 +99,54 @@ void testGetsAll(CouchClient client) {
   expect(f1, completes);
 }
 
+final String BEER_VALUE =
+'{"name":"Wrath","abv":8.2,"ibu":0.0,"srm":0.0,"upc":0,"type":"beer",'
+'"brewery_id":"midnight_sun_brewing_co","updated":"2010-07-22 20:00:20",'
+'"description":"WRATH Belgian-style Double IPA is fiercely bitter with '
+'notes of spice and earth. Its fury slowly and purposefully unfurls on '
+'the tongue, relentlessly bringing on more and more enraged flavor with '
+'each sip. \\r\\n\\r\\nWrath wreaks havoc on your taste buds. Anything you '
+'drink after this may as well be water.","style":"Other Belgian-Style Ales",'
+'"category":"Belgian and French Ale"}';
+//get multiple key
+void testGetBearWithGetAll(CouchClient client) {
+  Stream s1 = client.getAll(["midnight_sun_brewing_co-wrath"]);
+  Future<List<GetResult>> f1 = s1.toList();
+
+  f1.then((List<GetResult> grs) {
+    int j = 0;
+    grs.forEach((GetResult gr) {
+      expect(gr.key, equals("midnight_sun_brewing_co-wrath"));
+//      print('value:${decodeUtf8(gr.data)}');
+      expect(decodeUtf8(gr.data), equals(BEER_VALUE));
+      expect(gr.cas, isNull);
+      ++j;
+    });
+  });
+
+  expect(f1, completes);
+}
+
+void testGetBeerWithGet(CouchClient client) {
+  Future f1 = client.get("midnight_sun_brewing_co-wrath");
+  f1.then((v) {
+    expect(decodeUtf8(v.data), equals(BEER_VALUE));
+    expect(v.cas, isNull);
+  });
+  expect(f1, completes);
+}
+
+//get a key
+void testGetKey0(CouchClient client) {
+  Future f1 = client.get('key0');
+  f1.then((v) {
+    expect(decodeUtf8(v.data), equals('val0'));
+    expect(v.cas, isNull);
+  });
+  expect(f1, completes);
+}
+
+
 void main() {
   setupLogger();
 
@@ -112,7 +160,14 @@ void main() {
     test('TestGets1', () => testGets1(client));
     test('TestGets2', () => testGets2(client));
     test('TestGetsAll', () => testGetsAll(client));
+    test('TestGetKey0', () => testGetKey0(client));
+    test('TestGetBearWithGet', () => testGetBeerWithGet(client));
+    test('TestGetBearWithGetAll', () => testGetBearWithGetAll(client));
   });
+
+  print("ABC.hashCode: ${'ABC'.hashCode}");
+  var abc = 'AB'+'C';
+  print("abc.hashCode: ${abc.hashCode}");
 
 }
 

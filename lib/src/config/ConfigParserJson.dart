@@ -12,7 +12,7 @@ class ConfigParserJson {
   Logger _logger;
 
   ConfigParserJson() {
-    _logger = initLogger('couchbase.config', this);
+    _logger = initLogger('couchclient.config', this);
   }
 
   //TODO: catch error

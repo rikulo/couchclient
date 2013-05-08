@@ -12,7 +12,7 @@ class VbucketNodeLocator implements NodeLocator {
   _TotalConfig _fullConfig;
 
   VbucketNodeLocator(List<MemcachedNode> nodes, Config joinConfig) {
-    _logger = initLogger('memcached', this);
+    _logger = initLogger('couchclient.spi', this);
     Map<String, MemcachedNode> nodesMap = _initNodesMap(joinConfig, nodes);
     _fullConfig = new _TotalConfig(joinConfig, nodesMap);
   }

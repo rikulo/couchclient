@@ -11,7 +11,7 @@ class ViewConnection {
       CouchbaseConnectionFactory connFactory)
       : _connFactory = connFactory {
 
-    _logger = initLogger('couchbase', this);
+    _logger = initLogger('couchclient.spi', this);
     _logger.finest('saddrs:$saddrs');
     couchNodes = createViewNodes(saddrs);
   }

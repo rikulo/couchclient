@@ -94,38 +94,14 @@ class Query {
   }
 
   /**
-   * Sets the key to retrive the matched document; Noticed that this is a
-   * sugar API for you to set complex key if your key is not a simple
-   * String.
-   */
-  void set complexKey(ComplexKey key) {
-    _args[KEY] = key.toJson();
-  }
-
-  /**
-   * Sets the key to retrive the matched document. If your key is a complex one,
-   * set complexKey instead.
+   * Sets the key to retrive the matched document.
    */
   void set key(String key) {
     _args[KEY] = key;
   }
 
   /**
-   * Sets query to return documents that match each of keys
-   * specified. Noticed that this is a
-   * sugar API for you to set complex keys if your keys is not a simple
-   * list of Strings.
-   */
-  void set complexKeys(List<ComplexKey> keys) {
-    List<String> results = new List(keys.length);
-    for(int j = 0; j < keys.length; ++j)
-      results[j] = keys[j].toJson();
-    _args[KEYS] = "[${results.join(',')}]";
-  }
-
-  /**
-   * Sets query to return documents that match each of keys specifiedReturn only documents that match each of keys specified within the given
-   * array.  If your keys are complex ones, set complexKeys instead.
+   * Sets query to return documents that match each of keys specified.
    */
   void set keys(List<String> keys) {
     _args[KEYS] = json.stringify(keys);
@@ -145,8 +121,7 @@ class Query {
   => _args.containsKey(LIMIT) ? _args[LIMIT] : -1;
 
   /**
-   * Sets the key range of this query. If your keys are complex ones, use
-   * [setComplexRange] instead.
+   * Sets the key range of this query.
    */
   void setRange(String startkey, String endkey) {
     _args[ENDKEY] = endkey;
@@ -154,28 +129,11 @@ class Query {
   }
 
   /**
-   * Sets the complex key range of this query. Noticed that this is a sugar
-   * API of [setRange] for complex keys.
-   */
-  void setComplexRange(ComplexKey startkey, ComplexKey endkey) {
-    _args[ENDKEY] = endkey.toJson();
-    _args[STARTKEY] = startkey.toJson();
-  }
-
-  /**
    * Sets the start key of a range for this query. If your keys are complex
-   * ones, use [complexRangeStart] instead.
+   * ones, use [#complexRangeStart] instead.
    */
   void set rangeStart(String startkey) {
     _args[STARTKEY] = startkey;
-  }
-
-  /**
-   * Set the complex start key of range for this query. Noticed that this is
-   * a sugar API of [rangeStart] for complex key.
-   */
-  void set complexRangeStart(ComplexKey startkey) {
-    _args[STARTKEY] = startkey.toJson();
   }
 
   /**
@@ -187,18 +145,10 @@ class Query {
 
   /**
    * Sets the end key of a range for this query. If your keys are complex
-   * ones, use [complexRangeEnd] instead.
+   * ones, use [#complexRangeEnd] instead.
    */
   void set rangeEnd(String endkey) {
     _args[ENDKEY] = endkey;
-  }
-
-  /**
-   * Set the complex end key of range for this query. Noticed that this is
-   * a sugar API of [rangeEnd] for complex key.
-   */
-  void set complexRangeEnd(ComplexKey endkey) {
-    _args[ENDKEY] = endkey.toJson();
   }
 
   /**

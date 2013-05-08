@@ -2,7 +2,7 @@
 //History: Thu, Mar 08, 2013  10:36:35 AM
 // Author: hernichen
 
-part of couchclient;
+part of couchclient_impl;
 
 /**
  * Allows simple definition of complex JSON keys for query inputs.

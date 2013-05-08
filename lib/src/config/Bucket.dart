@@ -18,7 +18,7 @@ class Bucket {
   Bucket(this.name, this.config, this.streamingUri, this.nodes)
       : isNotUpdating = false {
 
-    _logger = initLogger('couchbase.config', this);
+    _logger = initLogger('couchclient.config', this);
   }
 
   int get hashCode {

@@ -25,7 +25,7 @@ class DesignDoc {
    */
   final List<SpatialViewDesign> spatialViews;
 
-  DesignDoc(this.name, {this.language : 'javascript', List<ViewDesign> views,
+  DesignDoc(this.name, {this.language: 'javascript', List<ViewDesign> views,
             List<SpatialViewDesign> spatialViews})
       : this.views = views == null ? new List() : views,
         this.spatialViews = spatialViews == null ? new List() : spatialViews;

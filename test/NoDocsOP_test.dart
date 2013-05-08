@@ -9,12 +9,30 @@ import 'package:unittest/unittest.dart';
 import 'package:couchclient/couchclient.dart';
 import 'CouchbaseTestUtil.dart' as cc;
 
+/**
+ * The JavaScript Map-Reduce View function. It will look at the documents in
+ * the bucket and emite the name and id as a key value pairs, if they are of
+ * type "beer" and they have a name
+ */
+String VIEW = '''
+function (doc, meta) {
+  if (doc.type && doc.name && doc.type == "beer") {
+    emit(doc.name, meta.id);
+  }
+}''';
+
 //test getViewOP
-void testNoDocsOP0(CouchClient client, String designDocName, String viewName) {
-  Future f = client.getView(designDocName, viewName);
-  Future f2 = f.then((view) {
+void testNoDocsOP0(CouchClient client) {
+  // Prepare View function with name "by_name"
+  ViewDesign vd = new ViewDesign("by_name", VIEW);
+  // Prepare Design document with the name "beer"
+  DesignDoc dd = new DesignDoc("beer", views: [vd]);
+  // Add the DesignDocument "beer" into database
+  Future f = client.addDesignDoc(dd);
+  f.then((_) =>client.getView("beer", "by_name"))
+  .then((view) {
     expect(view, isNotNull);
-    expect(view.viewName, equals("brewery_beers"));
+    expect(view.viewName, equals("by_name"));
     expect(view.designDocName, equals("beer"));
     expect(view.bucketName, equals("beer-sample"));
     expect(view.hasMap, isTrue);
@@ -23,27 +41,23 @@ void testNoDocsOP0(CouchClient client, String designDocName, String viewName) {
     query.limit = 10;
     query.descending = true;
     return client.query(view, query);
-  });
-  f2.then((resp) {
+  })
+  .then((resp) {
     print("---------------------------");
-    for(ViewRowNoDocs row in resp.rows) {
-      print(row);
+    expect(resp.rows.length, equals(10));
+    for(ViewRow row in resp.rows) {
+      expect(row.doc, isNull);
     }
   });
   expect(f, completes);
-  expect(f2, completes);
 }
-
-String REST_USER = 'Administrator';
-String REST_PWD = 'password';
-String DEFAULT_BUCKET_NAME = 'default';
 
 void main() {
   group('NoDocsOPTest:', () {
     CouchClient client;
     setUp(() => cc.prepareCouchClient().then((c) => client = c));
     tearDown(() => client.close());
-    test('TestGetViewOP0', () => testNoDocsOP0(client, 'beer', 'brewery_beers'));
+    test('TestGetViewOP0', () => testNoDocsOP0(client));
   });
 }
 

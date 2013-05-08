@@ -141,6 +141,9 @@ class CouchbaseConnection extends MemcachedConnection {
         VbucketNodeLocator vlocator = locator;
         if (o is VbucketAwareOP) {
           VbucketAwareOP vo = o;
+          Map<String, int> vbucketMap = new HashMap();
+          vbucketMap[key] = vlocator.getVbucketIndex(key);
+          vo.setVbucketID(vbucketMap);
           if (!vo.notMyVbucketNodes.isEmpty) {
             MemcachedNode alternative =
                 vlocator.getAlternative(key, vo.notMyVbucketNodes);
@@ -159,6 +162,20 @@ class CouchbaseConnection extends MemcachedConnection {
     } else {
       assert(o.isCancelled);
     }
+  }
+
+  //@Override
+  void addMultiKeyOPToNode(List<String> keys, MemcachedNode node, OP op) {
+    if (locator is VbucketNodeLocator && op is VbucketAwareOP) {
+      final VbucketNodeLocator vlocator = locator;
+      Map<String, int> vbucketMap = new HashMap();
+      for (String key in keys) {
+        vbucketMap[key] = vlocator.getVbucketIndex(key);
+      }
+      final VbucketAwareOP vop= op;
+      vop.setVbucketID(vbucketMap);
+    }
+    addOPToNode(node, op);
   }
 }
 
