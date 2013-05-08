@@ -6,6 +6,6 @@ authors:
 - Henri Chen <henrichen@rikulo.org>
 homepage: http://rikulo.org
 dependencies:
-  #memcached_client:
+  memcached_client:
   unittest:
   logging:
