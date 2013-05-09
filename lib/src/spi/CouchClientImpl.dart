@@ -123,7 +123,17 @@ class CouchClientImpl extends MemcachedClientImpl implements CouchClient {
        });
     });
   }
-//
+
+
+//  /**
+//   * Check the current duration status of the the specified document.
+//   *
+//   * + [key] - document id of the specified docuemnt
+//   * + [cas] - CAS version of the document
+//   * + [persist] - expected persist number
+//   * + [replicate] - expected replicated number
+//   * + [delete] - whether deleted
+//   */
 //  Future<bool> observePoll(String key, int cas, PersistTo persist,
 //      ReplicateTo replicate, bool delete) {
 //    Completer cmpl = new Completer();

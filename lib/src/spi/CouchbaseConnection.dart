@@ -100,13 +100,13 @@ class CouchbaseConnection extends MemcachedConnection {
   }
 
   /**
-   * Add an operation to the given connection.
+   * Locate the server node to add an operation into.
    *
    * + [key] - the key the operation is operating upon
    * + [o] - the operation
    */
   //@Override
-  void addOP(String key, OP o) {
+  MemcachedNode locateNode(String key, OP o) {
     MemcachedNode placeIn = null;
     MemcachedNode primary = locator.getPrimary(key);
     if (primary.isActive || failureMode == FailureMode.Retry) {
@@ -134,6 +134,11 @@ class CouchbaseConnection extends MemcachedConnection {
       }
     }
 
+    return placeIn;
+  }
+
+  //@Override
+  void addSingleKeyOPToNode(String key, MemcachedNode placeIn, OP o) {
     assert(o.isCancelled || placeIn != null);
     if (placeIn != null) {
       // add the vbucketIndex to the operation

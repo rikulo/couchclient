@@ -2,21 +2,29 @@
 //History: Fri, Feb 22, 2013  04:06:21 PM
 // Author: henrichen
 
-import '../../../../../../../D:/Program/dart/dart-sdk/lib/async/async.dart';
-import '../../../../../../../D:/Program/dart/dart-sdk/lib/uri/uri.dart';
-import '../../../../../../../D:/Program/dart/dart-sdk/lib/utf/utf.dart';
-import '../../packages/unittest/unittest.dart';
-import '../../packages/memcached_client/memcached_client.dart';
-import '../../packages/couchclient/couchclient.dart';
-import '../../test/CouchbaseTestUtil.dart' as cc;
+import 'dart:async';
+import 'dart:uri';
+import 'dart:utf';
+import 'package:unittest/unittest.dart';
+import 'package:memcached_client/memcached_client.dart';
+import 'package:couchclient/couchclient.dart';
+import 'CouchbaseTestUtil.dart' as cc;
 
 //persist
 void testObserve1(CouchClient client) {
-  Future f = client.gets('key0')
-    .then((GetResult rv) => client.observe('key0'))
-    .then((Map<MemcachedNode, ObserveResult> rv) {
-      expect(rv.values.first.status, equals(ObserveStatus.PERSISTED));
-    });
+  Future f = client.set('key0', encodeUtf8('"value0"'))
+  .then((ok) {
+    if (ok) {
+      return new Future.delayed(new Duration(seconds:1), () => ok);
+    } else {
+      throw new StateError("Cannot set key0");
+    }
+  })
+//  .then((_) => client.gets('key0'))
+  .then((_) => client.observe('key0'))
+  .then((Map<MemcachedNode, ObserveResult> rv) {
+    expect(rv.values.first.status, equals(ObserveStatus.PERSISTED));
+  });
   expect(f, completes);
 
 }
