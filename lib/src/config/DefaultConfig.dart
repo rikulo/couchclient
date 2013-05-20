@@ -78,6 +78,29 @@ class DefaultConfig implements Config {
 
     return diff;
   }
+
+  @override
+  int get hashCode {
+    int h = hashAlgorithm.hashCode;
+    h = 31 * h + mask;
+    h = 31 * h + replicasCount;
+    h = 31 * h + listHashCode(servers);
+    h = 31 * h + listHashCode(vbuckets);
+    h = 31 * h + listHashCode(couchServers);
+    h = 31 * h + configType.ordinal;
+    return h & 0xffffffff;
+  }
+
+  @override
+  bool operator ==(other) {
+    if (identical(this, other)) return true;
+    if (other is! Config) return false;
+    return this.hashAlgorithm == other.hashAlgorithm
+        && this.mask == other.mask
+        && this.replicasCount == other.replicasCount
+        && listEquals(this.servers, other.servers)
+        && listEquals(this.vbuckets, other.vbuckets)
+        && listEquals(this.couchServers, other.couchServers)
+        && this.configType == other.configType;
+  }
 }
-
-

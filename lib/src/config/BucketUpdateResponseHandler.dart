@@ -33,6 +33,7 @@ class BucketUpdateResponseHandler {
       lastResponse = _partialResponse.toString();
       _partialResponse = new StringBuffer();
       _partialResponse.write(curChunk.substring(j+4));
+      _logger.finer("End of Chunk, Response length is: ${lastResponse.length}");
       if (_monitor != null)
         _monitor.replaceConfig();
     } else {

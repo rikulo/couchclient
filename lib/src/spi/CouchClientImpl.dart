@@ -12,37 +12,23 @@ class CouchClientImpl extends MemcachedClientImpl implements CouchClient {
   static Future<CouchClient> connect(CouchbaseConnectionFactory factory) {
     return factory.vbucketConfig.then((config) {
       ViewConnection viewConn = null;
-      List<SocketAddress> saddrs = _toSocketAddresses(config.servers);
+      List<SocketAddress> saddrs =
+          HttpUtil.parseSocketAddressesFromStrings(config.servers);
       if (config.configType == ConfigType.COUCHBASE) {
         List<SocketAddress> uaddrs = _toSocketAddressesFromUri(config.couchServers);
         viewConn = factory.createViewConnection(uaddrs);
       }
       return factory.createConnection(saddrs)
-        .then((conn) => new CouchClientImpl(viewConn, conn, factory));
+      .then((conn) => new CouchClientImpl(viewConn, conn, factory))
+      .then((client) {
+        return factory.configProvider.subscribe(factory.bucketName, client)
+        .then((ok) => client);
+      });
     });
   }
 
-  static List<SocketAddress> _toSocketAddressesFromUri(List<Uri> servers) {
-    List<SocketAddress> saddrs = new List();
-    for (Uri server in servers) {
-      saddrs.add(new SocketAddress(server.domain, server.port));
-    }
-    if (saddrs.isEmpty)
-      throw new ArgumentError("servers cannot be empty");
-
-    return saddrs;
-  }
-
-  static List<SocketAddress> _toSocketAddresses(List<String> servers) {
-    List<SocketAddress> saddrs = new List();
-    for (String server in servers) {
-      int colon = server.lastIndexOf(':');
-      if (colon < 1)
-        throw new ArgumentError('Invalid server "$server" in list: $servers');
-      String host = server.substring(0, colon);
-      String port = server.substring(colon+1);
-      saddrs.add(new SocketAddress(host, int.parse(port)));
-    }
+  static List<SocketAddress> _toSocketAddressesFromUri(List<Uri> uris) {
+    List<SocketAddress> saddrs = HttpUtil.parseSocketAddressesFromUris(uris);
     if (saddrs.isEmpty)
       throw new ArgumentError("servers cannot be empty");
 
@@ -124,138 +110,174 @@ class CouchClientImpl extends MemcachedClientImpl implements CouchClient {
     });
   }
 
+  Future<bool> observePoll(String key, {
+      int cas,
+      PersistTo persistTo: PersistTo.ZERO,
+      ReplicateTo replicateTo: ReplicateTo.ZERO,
+      bool isDelete: false}) {
 
-//  /**
-//   * Check the current duration status of the the specified document.
-//   *
-//   * + [key] - document id of the specified docuemnt
-//   * + [cas] - CAS version of the document
-//   * + [persist] - expected persist number
-//   * + [replicate] - expected replicated number
-//   * + [delete] - whether deleted
-//   */
-//  Future<bool> observePoll(String key, int cas, PersistTo persist,
-//      ReplicateTo replicate, bool delete) {
-//    Completer cmpl = new Completer();
-//
-//    if (persist == null) {
-//      persist = PersistTo.ZERO;
-//    }
-//    if (replicate == null) {
-//      replicate = ReplicateTo.ZERO;
-//    }
-//    return _connFactory.checkConfigAgainstDurability(persist, replicate)
-//    .then((ok) {
-//      if (!ok) return false;
-//
-//      int persistReplica = persist.value > 0 ? persist.value - 1 : 0;
-//      int replicateTo = replicate.value;
-//      int obsPolls = 0;
-//      int obsPollMax = _connFactory.observePollMax;
-//      int obsPollInterval = _connFactory.observePollInterval;
-//      bool persistMaster = persist.value > 0;
-//      return _connFactory.vbucketConfig
-//        .then((cfg) {
-//          VbucketNodeLocator vlocator = locator;
-//
-//          if (!_checkObserveReplica(key, persistReplica, replicateTo, cfg, vlocator))
-//            return false;
-//
-//          int replicaPersistedTo = 0;
-//          int replicatedTo = 0;
-//          bool persistedMaster = false;
-//
-//
-//      while(replicateTo > replicatedTo || persistReplica - 1 > replicaPersistedTo
-//          || (!persistedMaster && persistMaster)) {
-//        if (!_checkObserveReplica(key, persistReplica, replicateTo, cfg, vlocator))
-//          return false;
-//
-//        if (++obsPolls >= obsPollMax) {
-//          long timeTried = obsPollMax * obsPollInterval;
-//          TimeUnit tu = TimeUnit.MILLISECONDS;
-//          throw new ObservedTimeoutException("Observe Timeout - Polled"
-//              + " Unsuccessfully for at least " + tu.toSeconds(timeTried)
-//              + " seconds.");
-//        }
-//
-//        Map<MemcachedNode, ObserveResponse> response = observe(key, cas);
-//
-//        int vb = vlocator.getVBucketIndex(key);
-//        MemcachedNode master = vlocator.getServerByIndex(cfg.getMaster(vb));
-//
-//        replicaPersistedTo = 0;
-//        replicatedTo = 0;
-//        persistedMaster = false;
-//        for (Entry<MemcachedNode, ObserveResponse> r : response.entrySet()) {
-//          boolean isMaster = r.getKey() == master ? true : false;
-//          if (isMaster && r.getValue() == ObserveResponse.MODIFIED) {
-//            throw new ObservedModifiedException("Key was modified");
+    final Completer<bool> cmpl = new Completer();
+    _connFactory.checkConfigAgainstDurability(persistTo, replicateTo)
+    .then((_) => _connFactory.vbucketConfig)
+    .then((cfg) {
+      final int numPersistReplica = persistTo.value > 0 ? persistTo.value - 1 : 0;
+      final int numReplica = replicateTo.value;
+      final bool isPersistMaster = persistTo.value > 0;
+      VbucketNodeLocator vlocator = locator;
+
+      _checkObserveReplica(key, numPersistReplica, numReplica, cfg, vlocator);
+
+      if (numReplica <= 0 && numPersistReplica <= 0 && !isPersistMaster) {
+        cmpl.complete(true);
+      } else {
+        final int obsPolls = 0;
+        final int obsPollMax = _connFactory.observePollMax;
+        final Duration obsPollInterval =
+            new Duration(milliseconds: _connFactory.observePollInterval);
+
+        observePoll0(
+            cmpl,
+            key,
+            cas,
+            isDelete,
+            cfg,
+            vlocator,
+            numReplica,
+            numPersistReplica,
+            isPersistMaster,
+            obsPolls,
+            obsPollMax,
+            obsPollInterval);
+      }
+    })
+    .catchError((err) => cmpl.completeError(err));
+
+    return cmpl.future;
+  }
+
+  void observePoll0(
+      Completer cmpl,
+      String key,
+      int cas,
+      bool isDelete,
+      Config cfg,
+      VbucketNodeLocator vlocator,
+      int numReplica,
+      int numPersistReplica,
+      bool isPersistMaster,
+      int obsPolls,
+      int obsPollMax,
+      Duration obsPollInterval) {
+
+    _checkObserveReplica(key, numPersistReplica, numReplica, cfg, vlocator);
+
+    this.observe(key, cas)
+    .then((response) {
+      int vb = vlocator.getVbucketIndex(key);
+      MemcachedNode master = vlocator.getServerByIndex(cfg.getMaster(vb));
+
+      int observePersistReplica = 0;
+      int observeReplica = 0;
+      bool observePersistMaster = false;
+      for (MemcachedNode node in response.keys) {
+        final bool isMaster = node == master;
+        final ObserveStatus status = response[node].status;
+        if (isMaster && status == ObserveStatus.MODIFIED) {
+          throw new ObservedModifiedException("Key was modified");
+        }
+        if (!isDelete) {
+          if (!isMaster && status == ObserveStatus.NOT_PERSISTED) {
+            observeReplica++;
+          } else if (status == ObserveStatus.PERSISTED) {
+            if (isMaster) {
+              observePersistMaster = true;
+            } else {
+              observeReplica++;
+              observePersistReplica++;
+            }
+          }
+        } else {
+//TODO(20130520, henrichen): The following code is from Couchbase Java client
+//  but the program logic is strange to me, so I rewrite it to be symetric to
+//  of isDelete is false.
+//          if (status == ObserveStatus.LOGICALLY_DELETED) {
+//            observeReplica++;
+//          } else if (status == ObserveStatus.NOT_FOUND) {
+//            observeReplica++;
+//            observePersistReplica++;
+//            if (isMaster) {
+//              obervePersistMaster = true;
+//            } else {
+//              observePersistReplica++;
+//            }
 //          }
-//          if (!isDelete) {
-//            if (!isMaster && r.getValue()
-//              == ObserveResponse.FOUND_NOT_PERSISTED) {
-//              replicatedTo++;
-//            }
-//            if (r.getValue() == ObserveResponse.FOUND_PERSISTED) {
-//              if (isMaster) {
-//                persistedMaster = true;
-//              } else {
-//                replicatedTo++;
-//                replicaPersistedTo++;
-//              }
-//            }
-//          } else {
-//            if (r.getValue() == ObserveResponse.NOT_FOUND_NOT_PERSISTED) {
-//              replicatedTo++;
-//            }
-//            if (r.getValue() == ObserveResponse.NOT_FOUND_PERSISTED) {
-//              replicatedTo++;
-//              replicaPersistedTo++;
-//              if (isMaster) {
-//                persistedMaster = true;
-//              } else {
-//                replicaPersistedTo++;
-//              }
-//            }
-//          }
-//        }
-//        try {
-//          Thread.sleep(obsPollInterval);
-//        } catch (InterruptedException e) {
-//          getLogger().error("Interrupted while in observe loop.", e);
-//          throw new ObservedException("Observe was Interrupted ");
-//        }
-//    }
-//  }
-//
-//  bool _checkObserveReplica(String key, int numPersist, int numReplica,
-//                            Config cfg, VbucketNodeLocator locator) {
-//    if(numReplica > 0) {
-//      int vbucketIndex = locator.getVbucketIndex(key);
-//      int currentReplicaNum = cfg.getReplica(vbucketIndex, numReplica - 1);
-//      if (currentReplicaNum < 0) {
-//        _logger.fine("Currently, there is no replica available "
-//            "for the given replica index. This can be the case because of a "
-//            "failed over node which has not yet been rebalanced.");
-//        return false;
-//      }
-//    }
-//
-//    int replicaCount = math.min(locator.allNodes.length - 1, cfg.replicasCount);
-//
-//    if (numReplica > replicaCount) {
-//      _logger.fine("Requested replication to " + numReplica
-//          + " node(s), but only " + replicaCount + " are avaliable");
-//      return false;
-//    } else if (numPersist > replicaCount + 1) {
-//      _logger.fine("Requested persistence to " + numPersist
-//          + " node(s), but only " + (replicaCount + 1) + " are available.");
-//      return false;
-//    }
-//
-//    return true;
-//  }
+          if (!isMaster && status == ObserveStatus.LOGICALLY_DELETED) {
+            observeReplica++;
+          } else if (status == ObserveStatus.NOT_FOUND) {
+            if (isMaster) {
+              observePersistMaster = true;
+            } else {
+              observeReplica++;
+              observePersistReplica++;
+            }
+          }
+        }
+      }
+
+      if (numReplica <= observeReplica
+          && numPersistReplica <= observePersistReplica
+          && (observePersistMaster || !isPersistMaster)) {
+        cmpl.complete(true);
+      } else {
+        if (++obsPolls >= obsPollMax) {
+          int timeTried = obsPollMax * obsPollInterval.inMilliseconds;
+          throw new ObservedTimeoutException("Observe Timeout - Polled"
+              " Unsuccessfully for at least $timeTried milliseconds.");
+        }
+
+        return new Future.delayed(obsPollInterval)
+        .then((_) =>
+            observePoll0( //recursive
+                cmpl,
+                key,
+                cas,
+                isDelete,
+                cfg,
+                vlocator,
+                numReplica,
+                numPersistReplica,
+                isPersistMaster,
+                obsPolls,
+                obsPollMax,
+                obsPollInterval)
+        );
+      }
+    })
+    .catchError((err) => cmpl.completeError(err));
+  }
+
+  void _checkObserveReplica(String key, int numPersist, int numReplica,
+                            Config cfg, VbucketNodeLocator locator) {
+    if(numReplica > 0) {
+      int vbucketIndex = locator.getVbucketIndex(key);
+      int currentReplicaNum = cfg.getReplica(vbucketIndex, numReplica - 1);
+      if (currentReplicaNum < 0) {
+        throw new ObservedException("Currently, there is no replica available "
+            "for the given replica index. This can be the case because of a "
+            "failed over node which has not yet been rebalanced.");
+      }
+    }
+
+    int replicaCount = math.min(locator.allNodes.length - 1, cfg.replicasCount);
+
+    if (numReplica > replicaCount) {
+      throw new ObservedException("Requested replication to $numReplica"
+          " node(s), but only $replicaCount are avaliable");
+    } else if (numPersist > replicaCount + 1) {
+      throw new ObservedException("Requested persistence to $numPersist"
+          " node(s), but only (${replicaCount + 1}) are available.");
+    }
+  }
 
   Future<ViewResponseWithDocs> _queryWithDocs(ViewBase view, Query query) {
     WithDocsOP op = new WithDocsOP(view, query);
@@ -305,6 +327,32 @@ class CouchClientImpl extends MemcachedClientImpl implements CouchClient {
 
   void _handleHttpOperation(HttpOP op) {
     _viewConn.addOP(op);
+  }
+
+  //--Reconfigurable--//
+  bool _reconfiguring = false;
+  void reconfigure(Bucket bucket) {
+    if (_reconfiguring) return;
+    try {
+      _reconfiguring = true;
+      if (bucket.isNotUpdating) {
+        _logger.info("Bucket configuration is disconnected from cluster "
+            "configuration updates, attempting to reconnect.");
+        _connFactory.requestConfigReconnect(_connFactory.bucketName, this);
+        _connFactory.checkConfigUpdate();
+      }
+      _connFactory.configProvider.buckets[_connFactory.bucketName] = bucket;
+
+      if(_viewConn != null) {
+        _viewConn.reconfigure(bucket);
+      }
+      if (memcachedConn is Reconfigurable) {
+        final Reconfigurable rconn = memcachedConn;
+        rconn.reconfigure(bucket);
+      }
+    } finally {
+      _reconfiguring = false;
+    }
   }
 }
 

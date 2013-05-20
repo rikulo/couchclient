@@ -7,11 +7,11 @@ part of couchclient;
 /**
  * Connection to a cluster of Couchbase server nodes.
  */
-class CouchbaseConnection extends MemcachedConnection {
+class CouchbaseConnection extends MemcachedConnection
+implements Reconfigurable {
   final CouchbaseConnectionFactory _connFactory;
 
   Logger _logger;
-  List<MemcachedNode> _nodesToShutdown;
 
   CouchbaseConnection(
       NodeLocator locator,
@@ -19,84 +19,73 @@ class CouchbaseConnection extends MemcachedConnection {
       OPFactory opFactory,
       FailureMode failureMode)
       : _connFactory = connFactory,
-        _nodesToShutdown = new List(),
         super(locator, connFactory, opFactory, failureMode) {
 
         _logger = initLogger('couchclient.spi', this);
       }
 
+  //--Reconfigurable--//
+  bool _reconfiguring = false;
   void reconfigure(Bucket bucket) {
-    // get a new collection of addresses from the received config
-    List<String> servers = bucket.config.servers;
-    Set<SocketAddress> newServerAddresses = new HashSet();
-    List<SocketAddress> newServers = new List();
-    for (String server in servers) {
-      int finalColon = server.lastIndexOf(':');
-      if (finalColon < 1)
-        throw new ArgumentError('Invalid server "$server" in vbucket\'s server list');
-
-      String hostPart = server.substring(0, finalColon);
-      String portNum = server.substring(finalColon + 1);
-
-      SocketAddress address =
-          new SocketAddress(hostPart, int.parse(portNum));
-
-      // add parsed address to our collections
-      newServerAddresses.add(address);
-      newServers.add(address);
-    }
-
-    // split current nodes to "odd nodes" and "stay nodes"
-    List<MemcachedNode> oddNodes = new List();
-    List<MemcachedNode> stayNodes = new List();
-    List<SocketAddress> stayServers = new List();
-    for (MemcachedNode current in locator.allNodes) {
-      if (newServerAddresses.contains(current.socketAddress)) {
-        stayNodes.add(current);
-        stayServers.add(current.socketAddress);
-      } else {
-        oddNodes.add(current);
+    if (_reconfiguring) return;
+    _reconfiguring = true;
+    try {
+      // get a new collection of addresses from the received config
+      final newSaddrs =
+          new HashSet<SocketAddress>.from(
+              HttpUtil.parseSocketAddressesFromStrings(bucket.config.servers));
+      _logger.finest("newSaddrs:$newSaddrs");
+      // split current nodes to "shutdown" nodes and "stay" nodes
+      List<MemcachedNode> oddNodes = new List();
+      List<MemcachedNode> stayNodes = new List();
+      for (MemcachedNode current in locator.allNodes) {
+        if (newSaddrs.remove(current.socketAddress)) {
+          stayNodes.add(current);
+        } else {
+          oddNodes.add(current);
+        }
       }
-    }
 
-    // prepare a collection of addresses for new nodes
-    newServers.removeWhere((e) => stayServers.contains(e));
+      // create a collection of new nodes
+      List<MemcachedNode> newNodes = _connFactory.createNodes(newSaddrs);
 
-    // create a collection of new nodes
-    List<MemcachedNode> newNodes = _connFactory.createNodes(newServers);
+      // merge stay nodes with new nodes
+      stayNodes.addAll(newNodes);
 
-    // merge stay nodes with new nodes
-    List<MemcachedNode> mergedNodes = new List();
-    mergedNodes.addAll(stayNodes);
-    mergedNodes.addAll(newNodes);
+      if (_logger.isLoggable(Level.FINE)) {
+        for(MemcachedNode keepingNode in stayNodes) {
+          _logger.fine("Node ${keepingNode.socketAddress} "
+              "will stay in cluster config after reconfiguration.");
+        }
+      }
 
-    for(MemcachedNode keepingNode in mergedNodes) {
-      _logger.fine("Node ${keepingNode.socketAddress} "
-          "will stay in cluster config after reconfiguration.");
-    }
-
-    // call update locator with new nodes list and vbucket config
-    if (locator is VbucketNodeLocator) {
-      VbucketNodeLocator locator0 = locator;
-      locator0.updateLocatorWithConfig(mergedNodes, bucket.config);
-    } else {
-      locator.updateLocator(mergedNodes);
-    }
+      // call update locator with new nodes list and vbucket config
+      if (locator is VbucketNodeLocator) {
+        VbucketNodeLocator vlocator = locator;
+        vlocator.updateLocatorWithConfig(stayNodes, bucket.config);
+      } else {
+        locator.updateLocator(stayNodes);
+      }
 //TODO(20130418, henrichen) : not supporting Throttling yet
-//    if(enableThrottling) {
-//      for(MemcachedNode node in newNodes) {
-//        throttleManager.setThrottler(node.socketAddress);
+//      if(enableThrottling) {
+//        for(MemcachedNode node in newNodes) {
+//          throttleManager.setThrottler(node.socketAddress);
+//        }
+//        for(MemcachedNode node in oddNodes) {
+//          throttleManager.removeThrottler(node.socketAddress);
+//        }
 //      }
-//      for(MemcachedNode node in oddNodes) {
-//        throttleManager.removeThrottler(node.socketAddress);
-//      }
-//    }
 
-    // schedule shutdown for the oddNodes
-    for(MemcachedNode shutDownNode in oddNodes) {
-      _logger.info("Scheduling Node ${shutDownNode.socketAddress} for shutdown.");
+      // schedule shutdown for the oddNodes
+      if (_logger.isLoggable(Level.INFO)) {
+        for(MemcachedNode node in oddNodes) {
+          _logger.info("Scheduling Node ${node.socketAddress} for shutdown.");
+        }
+      }
+      nodesToShutdown.addAll(oddNodes);
+    } finally {
+      _reconfiguring = false;
     }
-    _nodesToShutdown.addAll(oddNodes);
   }
 
   /**
@@ -183,5 +172,3 @@ class CouchbaseConnection extends MemcachedConnection {
     addOPToNode(node, op);
   }
 }
-
-

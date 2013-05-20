@@ -1,6 +1,6 @@
 part of couchclient;
 
-class ViewConnection {
+class ViewConnection implements Reconfigurable {
   final CouchbaseConnectionFactory _connFactory;
 
   Logger _logger;
@@ -53,6 +53,50 @@ class ViewConnection {
   ViewNode _nextNode() {
     _nexti = (++_nexti) % couchNodes.length;
     return couchNodes[_nexti];
+  }
+
+  //--Reconfigurable--//
+  bool _reconfiguring = false;
+  /**
+   * Reconfigures the connected ViewNodes.
+   *
+   * Whenever reconfiguration event heppens, new ViewNodes may need to be added
+   * or old ones need to be removed from the current configuration. This method
+   * takes care that those operations are performed in the correct order.
+   */
+  void reconfigure(Bucket bucket) {
+    if (_reconfiguring) return;
+    try {
+      _reconfiguring = true;
+      final newSaddrs =
+          new HashSet<SocketAddress>.from(
+              HttpUtil.parseSocketAddressesFromUris(bucket.config.couchServers));
+
+      //split current nodes into "odd" nodes and "stay" nodes
+      List<ViewNode> oddNodes = new List();
+      List<ViewNode> stayNodes = new List();
+
+      for (ViewNode node in couchNodes) {
+        if (newSaddrs.remove(node.socketAddress)) {
+          stayNodes.add(node);
+        } else {
+          oddNodes.add(node);
+        }
+      }
+
+      //create new nodes and merge into one set of nodes
+      List<ViewNode> newNodes = createViewNodes(new List.from(newSaddrs));
+      stayNodes.addAll(newNodes);
+
+      couchNodes = stayNodes;
+
+      //shutdown "odd" nodes
+      for (ViewNode node in oddNodes) {
+        node.close();
+      }
+    } finally {
+      _reconfiguring = false;
+    }
   }
 }
 

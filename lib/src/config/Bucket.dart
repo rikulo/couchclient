@@ -21,17 +21,30 @@ class Bucket {
     _logger = initLogger('couchclient.config', this);
   }
 
-  int get hashCode {
-    int result = name.hashCode;
-    result = 31 * result + config.hashCode;
-    result = 31 * result + nodes.hashCode;
-    return result;
-  }
-
   void setIsNotUpdating() {
     isNotUpdating = true;
     _logger.finest("Marking bucket as not updating,"
         " disconnected from config stream");
+  }
+
+  @override
+  String toString() => "$name: $config, $nodes";
+
+  @override
+  int get hashCode {
+    int h = name.hashCode;
+    h = 31 * h + config.hashCode;
+    h = 31 * h + listHashCode(nodes);
+    return h & 0xffffffff;
+  }
+
+  @override
+  bool operator ==(other) {
+    if (identical(this, other)) return true;
+    if (other is! Bucket) return false;
+    return this.name == other.name
+        && this.config == other.config
+        && listEquals(this.nodes, other.nodes);
   }
 }
 

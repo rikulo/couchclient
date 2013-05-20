@@ -18,7 +18,10 @@ void main() {
   setupLogger();
   group('DeleteDesignDocOPTest:', () {
     CouchClient client;
-    setUp(() => cc.prepareCouchClient().then((c) => client = c));
+    setUp(() =>
+        cc.prepareCouchClient()
+        .then((c) => client = c)
+        .catchError((err) => print("err:$err")));
     tearDown(() => client.close());
     test('TestDeleteDesignDocOP0', () => testDeleteDesignDocOP0(client, 'noSuchDoc'));
   });

@@ -15,5 +15,20 @@ class Vbucket {
   Vbucket(int m, List<int> r)
       : this.master = m,
         replicas = new List.from(r);
+
+  @override
+  int get hashCode {
+    int h = master;
+    h = h * 31 + listHashCode(replicas);
+    return h;
+  }
+
+  @override
+  bool operator ==(other) {
+    if (identical(this, other)) return true;
+    if (other is! Vbucket) return false;
+    return this.master == other.master
+        && listEquals(this.replicas, other.replicas);
+  }
 }
 

@@ -11,7 +11,7 @@ class ConfigProvider {
   static const String CLIENT_SPEC_VER = '1.0';
 
   Logger _logger;
-  List<Uri> baseList;
+  final List<Uri> baseList;
   String restUsr;
   String restPwd;
   Uri loadedBaseUri;
@@ -79,15 +79,21 @@ class ConfigProvider {
       }
       reSubBucket = bucketname;  // More than one subscriber, would be an error
       reSubRec = rec;
-      Future<Bucket> f = getBucketConfig(bucketname);
 
+      _logger.fine("Subscribing an object for reconfiguration "
+          "updates ${rec.runtimeType}");
+
+      final Future<Bucket> f = getBucketConfig(bucketname);
       return f.then((bucket) {
+        if (bucket == null) {
+          throw new StateError("Could not get bucket Configuration for ${bucketname}");
+        }
         ReconfigurableObserver obs = new ReconfigurableObserver(rec);
         BucketMonitor monitor = this.monitors[bucketname];
         if (monitor == null) {
           Uri streamingUri = bucket.streamingUri;
           monitor = new BucketMonitor(this.loadedBaseUri.resolveUri(streamingUri),
-            bucketname, this.restUsr, this.restPwd, configParser);
+            bucket, this.restUsr, this.restPwd, configParser);
           this.monitors[bucketname] = monitor;
           monitor.addObserver(obs);
           monitor.startMonitor();
@@ -130,31 +136,28 @@ class ConfigProvider {
   /**
    * Give a bucketname, walk the baseList until found the needed bucket.
    */
-  Future<Bucket> _readPools(String bucketname) {
-    return new Future.sync(() {
-      Completer<Bucket> cmpl = new Completer();
-      _readPools0(bucketname, cmpl, 0);
-      return cmpl.future;
-    });
-  }
+  Future<Bucket> _readPools(String bucketname) => _readPools0(bucketname, 0);
 
-  void _readPools0(String bucketname, Completer<Bucket> cmpl, int idx) {
+  Future<Bucket> _readPools0(String bucketname, int idx) {
     if (idx >= baseList.length) //none found
-      cmpl.complete(null);
+      return null;
 
     Uri baseUri = baseList[idx];
-    _readUri(null, baseUri, restUsr, restPwd).then((base) {
-      if (base.trim().isEmpty)
-        return _readPools0(bucketname, cmpl, idx+1); //check next Pool
+    return _readUri(null, baseUri, restUsr, restPwd)
+    .then((String base) {
+      if (base.trim().isEmpty) {
+        return _readPools0(bucketname, idx+1); //check next Pool
+      }
       Map<String, Pool> poolMap = configParser.parseBase(base);
-      if (!poolMap.containsKey(DEFAULT_POOL_NAME))
-        return _readPools0(bucketname, cmpl, idx+1); //check next Pool
+      if (!poolMap.containsKey(DEFAULT_POOL_NAME)) {
+        return _readPools0(bucketname, idx+1); //check next Pool
+      }
 
       //Load basic information for each Pool
       List<Future<Pool>> poolfs = new List();
       for (Pool pool in poolMap.values) {
-        Future<String> fpoolstr = _readUri(baseUri, pool.uri, restUsr, restPwd);
-        Future<Pool> fpool = fpoolstr.then((poolstr) {
+        Future<Pool> fpool = _readUri(baseUri, pool.uri, restUsr, restPwd)
+        .then((String poolstr) {
           _logger.finest("pool->$poolstr");
           configParser.loadPool(pool, poolstr);
           return pool;
@@ -164,14 +167,13 @@ class ConfigProvider {
 
       //Load Buckets information for each Pool
       //  after all pools loaded basic information
-      Future<List<Pool>> doneLoadBasic = Future.wait(poolfs);
-      doneLoadBasic.then((List<Pool> pools) {
+      return Future.wait(poolfs)
+      .then((List<Pool> pools) {
         List<Future<Pool>> bucketsfs = new List();
         for (Pool pool in pools) {
           _logger.finest("pool.bucketsUri->${pool.bucketsUri}");
-          Future<String> fbucketsStr =
-              _readUri(baseUri, pool.bucketsUri, restUsr, restPwd);
-          Future<Pool> fpool = fbucketsStr.then((bucketsStr) {
+          Future<Pool> fpool = _readUri(baseUri, pool.bucketsUri, restUsr, restPwd)
+          .then((String bucketsStr) {
             Map<String, Bucket> bucketsForPool =
                 configParser.parseBuckets(bucketsStr);
             pool.replaceBuckets(bucketsForPool);
@@ -179,31 +181,31 @@ class ConfigProvider {
           });
           bucketsfs.add(fpool);
         }
-
+        return Future.wait(bucketsfs);
+      })
+      .then((List<Pool> pools) {
         //check if found the named bucket among this set of pools
         //  after all pools loaded Buckets information
-        Future<List<Pool>> doneLoadBuckets = Future.wait(bucketsfs);
-        doneLoadBuckets.then((List<Pool> pools) {
-          bool bucketFound = false;
+        bool bucketFound = false;
+        for (Pool pool in pools) {
+          if (pool.hasBucket(bucketname)) {
+            bucketFound = true;
+            break;
+          }
+        }
+        //found the bucket, cache in the ConfigProvider
+        if (bucketFound) {
           for (Pool pool in pools) {
-            if (pool.hasBucket(bucketname)) {
-              bucketFound = true;
-              break;
+            final Map robuckets = pool.currentBuckets;
+            for (String key in robuckets.keys) {
+              buckets[key] = robuckets[key];
             }
           }
-          //found the bucket, cache in the ConfigProvider
-          if (bucketFound) {
-            for (Pool pool in pools) {
-              Map robuckets = new HashMap.from(pool.currentBuckets);
-              for (String key in robuckets.keys) {
-                buckets[key] = robuckets[key];
-              }
-            }
-            this.loadedBaseUri = baseUri;
-            cmpl.complete(buckets[bucketname]); //found the bucket, break out recursive loop
-          } else
-            return _readPools0(bucketname, cmpl, idx+1); //check next Pool
-        });
+          this.loadedBaseUri = baseUri;
+          return buckets[bucketname]; //found the bucket, break out recursive loop
+        } else {
+          return _readPools0(bucketname, idx+1); //check next Pool
+        }
       });
     });
   }

@@ -29,14 +29,13 @@ class CouchbaseConnectionFactory extends BinaryConnectionFactory {
    */
   static final int DEFAULT_OBS_POLL_MAX = 400;
 
-  String _bucket;
+  final String bucketName;
   String _password;
   AuthDescriptor _authDescriptor;
 
   Logger _logger;
   ConfigProvider _configProvider;
   int _configProviderLastUpdateTimestamp;
-  bool _needReconnect = false;
   bool _doingResubscribe = false;
   List<Uri> _storedBaseList;
   int _viewTimeout = DEFAULT_VIEW_TIMEOUT;
@@ -53,13 +52,13 @@ class CouchbaseConnectionFactory extends BinaryConnectionFactory {
   int observePollInterval = DEFAULT_OBS_POLL_INTERVAL;
   int observePollMax = DEFAULT_OBS_POLL_MAX;
 
-  CouchbaseConnectionFactory(List<Uri> baseList, String bucket, String password)
-      : _viewTimeout = 75000,
-        _authDescriptor = new AuthDescriptor(["PLAIN"], bucket, password),
+  CouchbaseConnectionFactory(List<Uri> baseList, String bucketName, String password)
+      : this.bucketName = bucketName,
+        _viewTimeout = 75000,
+        _authDescriptor = new AuthDescriptor(["PLAIN"], bucketName, password),
         super(NATIVE_HASH) {
 
     _logger = initLogger('couchclient', this);
-    _bucket = bucket;
     _password = password;
     _storedBaseList = new List();
     for(Uri bu in baseList) {
@@ -67,7 +66,7 @@ class CouchbaseConnectionFactory extends BinaryConnectionFactory {
         throw new ArgumentError('The base Uri must be absolute');
       _storedBaseList.add(bu);
     }
-    _configProvider = new ConfigProvider(baseList, _bucket, _password);
+    configProvider = new ConfigProvider(baseList, bucketName, _password);
   }
 
   //@Override
@@ -108,9 +107,9 @@ class CouchbaseConnectionFactory extends BinaryConnectionFactory {
 
   //@Override
   AuthDescriptor get authDescriptor {
-    if (_configProvider.anonymousAuthBucket != _bucket && _bucket != null) {
+    if (configProvider.anonymousAuthBucket != bucketName && bucketName != null) {
       if (_authDescriptor == null) {
-        _authDescriptor = new AuthDescriptor(["PLAIN"], _bucket, _password);
+        _authDescriptor = new AuthDescriptor(["PLAIN"], bucketName, _password);
       }
       return _authDescriptor;
     } else {
@@ -118,23 +117,21 @@ class CouchbaseConnectionFactory extends BinaryConnectionFactory {
     }
   }
 
-  String get bucketName => _bucket;
-
   int get viewTimeout => _viewTimeout;
 
   Future<Config> get vbucketConfig {
-    return _configProvider.getBucketConfig(_bucket).then((bucketConfig) {
+    return configProvider.getBucketConfig(bucketName).then((bucketConfig) {
       if (bucketConfig == null)
         throw new StateError("Could not fetch valid configuration "
             "from provided nodes. Stopping.");
       else if (bucketConfig.isNotUpdating) {
         _logger.warning("Noticed bucket configuration to be disconnected, "
             "will attempt to reconnect");
-        configProvider = new ConfigProvider(_storedBaseList, _bucket, _password);
+        configProvider = new ConfigProvider(_storedBaseList, bucketName, _password);
       }
-      return _configProvider
-          .getBucketConfig(_bucket)
-          .then((bucket) => bucket.config);
+      return configProvider
+          .getBucketConfig(bucketName)
+          .then((bucketConfig) => bucketConfig.config);
     });
   }
 
@@ -147,13 +144,13 @@ class CouchbaseConnectionFactory extends BinaryConnectionFactory {
   ConfigProvider get configProvider => _configProvider;
 
   void set configProvider(ConfigProvider configProvider) {
-    _configProvider = configProvider;
     _configProviderLastUpdateTimestamp = new DateTime.now().millisecondsSinceEpoch;
+    _configProvider = configProvider;
   }
 
   void requestConfigReconnect(String bucket, Reconfigurable reconfig) {
     configProvider.markForResubscribe(bucket, reconfig);
-    _needReconnect = true;
+    _needsReconnect = true;
   }
 
   /**
@@ -198,9 +195,21 @@ class CouchbaseConnectionFactory extends BinaryConnectionFactory {
    * + [replicateTo] - the number of nodes expected to replicate to.
    */
   Future<bool> checkConfigAgainstDurability(PersistTo persistTo,
-      ReplicateTo replicateTo) =>
-      checkConfigAgainstPersistence(persistTo)
-      .then((ok) => !ok ? false : checkConfigAgainstReplication(replicateTo));
+      ReplicateTo replicateTo) {
+    return this.vbucketConfig
+    .then((cfg) {
+      final nodeCount = cfg.serversCount;
+      if(persistTo.value > nodeCount) {
+        throw new ObservedException("Currently, there are less nodes in the "
+            "cluster than required to satisfy the persistence constraint.");
+      }
+      if(replicateTo.value >= nodeCount) {
+        throw new ObservedException("Currently, there are less nodes in the "
+            "cluster than required to satisfy the replication constraint.");
+      }
+      return true;
+    });
+  }
 
   /**
    * Check if a configuration update is needed.
@@ -287,7 +296,7 @@ class CouchbaseConnectionFactory extends BinaryConnectionFactory {
 
     new Future.delayed(new Duration(milliseconds:waitTime))
     .then((_) {
-      _logger.config("Resubscribing for ${_bucket} using base list "
+      _logger.config("Resubscribing for ${bucketName} using base list "
       "${_storedBaseList}");
 
       ConfigProvider oldConfigProvider = configProvider;
@@ -298,9 +307,9 @@ class CouchbaseConnectionFactory extends BinaryConnectionFactory {
 
       ConfigProvider newConfigProvider
         = configProvider
-        = new ConfigProvider(_storedBaseList, _bucket, _password);
+        = new ConfigProvider(_storedBaseList, bucketName, _password);
 
-      return newConfigProvider.subscribe(_bucket,
+      return newConfigProvider.subscribe(bucketName,
         oldConfigProvider == null ? null : oldConfigProvider.reconfigurable)
         .then((_) {
           if (_doingResubscribe)
@@ -311,7 +320,7 @@ class CouchbaseConnectionFactory extends BinaryConnectionFactory {
     })
     .catchError((err) {
       _logger.warning("Resubscribe attempt failed: $err");
-      resubscribeProcess(reconnectAttempt);
+      resubscribeProcess(reconnectAttempt); //try again!
     });
   }
 

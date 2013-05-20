@@ -22,7 +22,7 @@ part of couchclient;
  *      .then((myObject) => print("$myObject"))
  *      .catchError((err) => print("$err");
  */
-abstract class CouchClient implements MemcachedClient {
+abstract class CouchClient implements MemcachedClient, Reconfigurable {
   /**
    * Create a DesignDoc and add into Couchbase; asynchronously return true
    * if succeed.
@@ -66,27 +66,29 @@ abstract class CouchClient implements MemcachedClient {
    */
   Future<Map<MemcachedNode, ObserveResult>> observe(String key, [int cas]);
 
-//  /**
-//   * Poll and observe a key with the given cas and persist settings.
-//   *
-//   * Based on the given persistence and replication settings, it observes the
-//   * key and raises an exception if a timeout has been reached. This method is
-//   * normally used to make sure that a value is stored to the status you want it
-//   * in the cluster.
-//   *
-//   * If persist is null, it will default to PersistTo.ZERO and if replicate is
-//   * null, it will default to ReplicateTo.ZERO. This is the default behavior
-//   * and is the same as not observing at all.
-//   *
-//   * + [key] - the key to observe.
-//   * + [cas] - the CAS value for the key; default: null.
-//   * + [persist] - the persistence settings; default: [PersistTo.ZERO].
-//   * + [replicate] - the replication settings; default: [ReplicateTo.ZERO].
-//   * + [delete] - if the key is to be deleted; default: false.
-//   */
-//  Future<bool> observePoll(String key, {int cas,
-//    PersistTo persist: PersistTo.ZERO, ReplicateTo replicate: ReplicateTo.ZERO,
-//    bool delete: false});
+  /**
+   * Poll and observe a key with the given cas and persist settings.
+   *
+   * Based on the given [persistTo], [replicateTo], [isDelete] settings, it
+   * observes the key and raises an exception if a timeout has been reached.
+   * This method is normally used to make sure that a value is stored/deleted
+   * to the status you want it in the cluster.
+   *
+   * If [persistTo] is not specified, it will default to PersistTo.ZERO and if
+   * [replicateTo] is not specified, it will default to ReplicateTo.ZERO. This
+   * is the default behavior and is the same as not observing at all.
+   *
+   * + [key] - the key to observe.
+   * + [cas] - (optional) CAS version for the key; default: null to ignore cas check.
+   * + [persistTo] - (optional) persistence setting; default: [PersistTo.ZERO].
+   * + [replicateTo] - (optional) replication setting; default: [ReplicateTo.ZERO].
+   * + [isDelete] - (optional) if the key is to be deleted; default: false.
+   */
+  Future<bool> observePoll(String key, {
+    int cas,
+    PersistTo persistTo: PersistTo.ZERO,
+    ReplicateTo replicateTo: ReplicateTo.ZERO,
+    bool isDelete: false});
 
   /**
    * Create a new client connectting to the specified Couchbase bucket per
@@ -100,7 +102,9 @@ abstract class CouchClient implements MemcachedClient {
    */
   static Future<CouchClient> connect(
       List<Uri> baseList, String bucket, String password) {
-    final factory = new CouchbaseConnectionFactory(baseList, bucket, password);
-    return new Future.sync(() => CouchClientImpl.connect(factory));
+    return new Future.sync(() {
+      final factory = new CouchbaseConnectionFactory(baseList, bucket, password);
+      return CouchClientImpl.connect(factory);
+    });
   }
 }

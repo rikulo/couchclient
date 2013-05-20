@@ -14,6 +14,9 @@ import 'package:memcached_client/memcached_client.dart';
 
 part 'src/CouchClient.dart';
 part 'src/DesignDoc.dart';
+part 'src/ObservedException.dart';
+part 'src/ObservedModifiedException.dart';
+part 'src/ObservedTimeoutException.dart';
 part 'src/PersistTo.dart';
 part 'src/Query.dart';
 part 'src/ReplicateTo.dart';
