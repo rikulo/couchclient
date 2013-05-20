@@ -4,6 +4,7 @@
   * Release version 0.2.0 
   * Support observe command
   * Support automatic reconfiguration
+  * Fine tune hashCode and operator equality
   
 * May 8, 2013
   * Release version 0.1.0
