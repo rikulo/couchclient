@@ -23,7 +23,6 @@ class Vbucket {
     return h;
   }
 
-  @override
   bool operator ==(other) {
     if (identical(this, other)) return true;
     if (other is! Vbucket) return false;

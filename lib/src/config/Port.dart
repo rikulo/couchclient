@@ -15,7 +15,6 @@ class Port extends Enum {
   const Port(this.name, int ordinal)
       : super(ordinal);
 
-  @override
   String toString() => "$name($ordinal)";
 }
 

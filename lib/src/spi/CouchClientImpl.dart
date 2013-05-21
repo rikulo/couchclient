@@ -347,8 +347,7 @@ class CouchClientImpl extends MemcachedClientImpl implements CouchClient {
         _viewConn.reconfigure(bucket);
       }
       if (memcachedConn is Reconfigurable) {
-        final Reconfigurable rconn = memcachedConn;
-        rconn.reconfigure(bucket);
+        (memcachedConn as Reconfigurable).reconfigure(bucket);
       }
     } finally {
       _reconfiguring = false;

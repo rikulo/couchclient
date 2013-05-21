@@ -19,7 +19,6 @@ class Node {
     return h;
   }
 
-  @override
   bool operator ==(other) {
     if (identical(this, other)) return true;
     if (other is! Node) return false;
@@ -29,7 +28,6 @@ class Node {
         && mapEquals(this.ports, other.ports);
   }
 
-  @override
   String toString() => "host:$hostname, status:$status, ports:$ports";
 }
 

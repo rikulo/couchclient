@@ -27,7 +27,6 @@ class Bucket {
         " disconnected from config stream");
   }
 
-  @override
   String toString() => "$name: $config, $nodes";
 
   @override
@@ -38,7 +37,6 @@ class Bucket {
     return h & 0xffffffff;
   }
 
-  @override
   bool operator ==(other) {
     if (identical(this, other)) return true;
     if (other is! Bucket) return false;

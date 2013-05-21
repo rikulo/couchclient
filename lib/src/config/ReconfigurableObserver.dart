@@ -28,7 +28,6 @@ class ReconfigurableObserver implements Observer<Bucket> {
   @override
   int get hashCode => _reconfig.hashCode;
 
-  @override
   bool operator ==(other) {
     if (identical(this, other))
       return true;

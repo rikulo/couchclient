@@ -11,12 +11,17 @@ part of couchclient;
 //TODO: reconfiguration
 class CouchbaseMemcachedConnection extends MemcachedConnection
 implements Reconfigurable{
+  Logger _logger;
+
   CouchbaseMemcachedConnection(
       NodeLocator locator,
       ConnectionFactory connFactory,
       OPFactory opFactory,
       FailureMode failureMode)
-      : super(locator, connFactory, opFactory, failureMode);
+      : super(locator, connFactory, opFactory, failureMode) {
+
+    _logger = initLogger('couchclient.spi', this);
+  }
 
   //--Reconfigurable--//
   bool _reconfiguring = false;
@@ -41,7 +46,7 @@ implements Reconfigurable{
       }
 
       // create a collection of new nodes
-      List<MemcachedNode> newNodes = _connFactory.createNodes(newSaddrs);
+      List<MemcachedNode> newNodes = connFactory.createNodes(newSaddrs);
 
       // merge stay nodes with new nodes
       stayNodes.addAll(newNodes);

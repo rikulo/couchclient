@@ -91,7 +91,6 @@ class DefaultConfig implements Config {
     return h & 0xffffffff;
   }
 
-  @override
   bool operator ==(other) {
     if (identical(this, other)) return true;
     if (other is! Config) return false;

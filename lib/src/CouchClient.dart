@@ -24,6 +24,16 @@ part of couchclient;
  */
 abstract class CouchClient implements MemcachedClient, Reconfigurable {
   /**
+   * Get document as a GetResult of the provided key and lock its write
+   * access for the specified [locktime] in seconds. The
+   * maximum lock time is 30 seconds; any number more than 30 or less than zero
+   * would be deemed as 30 seconds.
+   * This API returns GetResult if succeed; otherwise, throw OPStatus.NOT_FOUND
+   * or other error status.
+   */
+  Future<GetResult> getAndLock(String key, int locktime);
+
+  /**
    * Create a DesignDoc and add into Couchbase; asynchronously return true
    * if succeed.
    */
