@@ -34,6 +34,11 @@ abstract class CouchClient implements MemcachedClient, Reconfigurable {
   Future<GetResult> getAndLock(String key, int locktime);
 
   /**
+   * Unlock document associated with the specified key.
+   */
+  Future<bool> unlock(String key, int cas);
+
+  /**
    * Create a DesignDoc and add into Couchbase; asynchronously return true
    * if succeed.
    */

@@ -53,14 +53,6 @@ void testGetAndLock2(String key, CouchClient client) {
 
 void main() {
   setupLogger();
-  group('TextGetAndLockTest:', () {
-    CouchClient client;
-    setUp(() => cc.prepareCouchClient().then((c) => client = c));
-    tearDown(() => client.close());
-    test('TestGetAndLock', () => testGetAndLock('keyt100', client));
-    test('TestGetAndLock2', () => testGetAndLock2('keyt100', client));
-  });
-
   group('BinaryGetAndLockTest:', () {
     CouchClient client;
     setUp(() => cc.prepareCouchClient().then((c) => client = c));
