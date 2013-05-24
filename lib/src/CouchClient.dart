@@ -71,6 +71,11 @@ abstract class CouchClient implements MemcachedClient, Reconfigurable {
   Future<ViewResponse> query(ViewBase view, Query query);
 
   /**
+   * Returns the statistic information of a give key.
+   */
+  Future<Map<String, String>> keyStats(String key);
+
+  /**
    * Observe a document with the specified key and check its persistency and
    * replicas status in the cluster.
    *
