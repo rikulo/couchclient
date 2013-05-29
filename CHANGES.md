@@ -1,5 +1,14 @@
 #Rikulo Couchbase Client
- 
+
+* May 29, 2013
+  * Release version 0.3.0
+  * Support keystats command
+  * Support unlock command
+  * Support getAndLock command
+  * Support stats command
+  * Support noop command
+  * Support getAndTouch command
+
 * May 20, 2013
   * Release version 0.2.0 
   * Support observe command
