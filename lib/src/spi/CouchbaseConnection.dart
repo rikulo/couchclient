@@ -134,7 +134,7 @@ implements Reconfigurable {
       if (locator is VbucketNodeLocator) {
         VbucketNodeLocator vlocator = locator;
         if (o is VbucketAwareOP) {
-          VbucketAwareOP vo = o;
+          VbucketAwareOP vo = o as VbucketAwareOP;
           Map<String, int> vbucketMap = new HashMap();
           vbucketMap[key] = vlocator.getVbucketIndex(key);
           vo.setVbucketID(vbucketMap);
@@ -166,7 +166,7 @@ implements Reconfigurable {
       for (String key in keys) {
         vbucketMap[key] = vlocator.getVbucketIndex(key);
       }
-      final VbucketAwareOP vop= op;
+      final VbucketAwareOP vop= op as VbucketAwareOP;
       vop.setVbucketID(vbucketMap);
     }
     addOPToNode(node, op);

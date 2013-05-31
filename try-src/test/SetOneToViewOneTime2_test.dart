@@ -61,10 +61,7 @@ Future<bool> query(CouchClient client) {
 }
 
 void main() {
-  CouchbaseConnectionFactory fact
-  = new CouchbaseConnectionFactory(
-      [Uri.parse("http://localhost:8091/pools")], 'default', '');
-  CouchClient.connect(fact)
+  CouchClient.connect([Uri.parse("http://localhost:8091/pools")], 'default', '')
     .then((CouchClient client) {
       stale = Stale.FALSE;
       Future f = process(client);

@@ -9,6 +9,7 @@ import 'dart:typed_data';
 import 'dart:crypto';
 import 'dart:json' as json;
 import 'dart:math' as math;
+import "package:meta/meta.dart";
 import 'package:logging/logging.dart';
 import 'package:memcached_client/memcached_client.dart';
 

@@ -15,10 +15,7 @@ Future<List> delDocs(CouchClient client) {
 }
 
 void main() {
-  CouchbaseConnectionFactory fact
-  = new CouchbaseConnectionFactory(
-      [Uri.parse("http://localhost:8091/pools")], 'default', '');
-  Future f = CouchClient.connect(fact)
+  Future f = CouchClient.connect([Uri.parse("http://localhost:8091/pools")], 'default', '')
     .then((CouchClient client) {
       expect(delDocs(client), completes);
     });
