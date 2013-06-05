@@ -5,7 +5,6 @@ library couchbase_test_util;
 
 import 'dart:async';
 import 'dart:utf';
-import 'dart:uri';
 import 'package:logging/logging.dart';
 import 'package:unittest/unittest.dart';
 import 'package:couchclient/couchclient.dart';

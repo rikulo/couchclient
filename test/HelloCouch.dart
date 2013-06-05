@@ -1,4 +1,3 @@
-import "dart:uri";
 import "dart:utf";
 import "dart:async";
 import "package:couchclient/couchclient.dart";

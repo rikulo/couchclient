@@ -1,5 +1,9 @@
 #Rikulo Couchbase Client
 
+* June 5, 2013
+  * Release version 0.3.0+2
+  * Make compatible with SDK version 0.5.13.1_r23552
+  
 * May 29, 2013
   * Release version 0.3.0
   * Support keystats command

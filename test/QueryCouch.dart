@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:utf';
-import 'dart:uri';
 import 'dart:json' as json;
 import 'package:memcached_client/memcached_client.dart';
 import 'package:couchclient/couchclient.dart';

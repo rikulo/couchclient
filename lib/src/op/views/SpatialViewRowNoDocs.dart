@@ -14,10 +14,10 @@ class SpatialViewRowNoDocs extends ViewRow {
   final String _value;
 
   SpatialViewRowNoDocs(String id, String bbox, String geometry, String value)
-      : this._id = _valid(id),
-        this._bbox = _valid(bbox),
-        this._geometry = _valid(geometry),
-        this._value = _valid(value);
+      : this._id = ViewRow._valid(id),
+        this._bbox = ViewRow._valid(bbox),
+        this._geometry = ViewRow._valid(geometry),
+        this._value = ViewRow._valid(value);
 
   String get id
   => _id;

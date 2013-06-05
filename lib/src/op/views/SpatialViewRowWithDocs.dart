@@ -15,10 +15,10 @@ class SpatialViewRowWithDocs extends ViewRow {
   final dynamic _doc;
 
   SpatialViewRowWithDocs(String id, String bbox, String geometry, String value, dynamic doc)
-      : this._id = _valid(id),
-        this._bbox = _valid(bbox),
-        this._geometry = _valid(geometry),
-        this._value = _valid(value),
+      : this._id = ViewRow._valid(id),
+        this._bbox = ViewRow._valid(bbox),
+        this._geometry = ViewRow._valid(geometry),
+        this._value = ViewRow._valid(value),
         this._doc = doc;
 
   String get id

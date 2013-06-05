@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:io';
-import 'dart:uri';
 import 'dart:utf';
 import '../../packages/unittest/unittest.dart';
 import '../../packages/couchclient/couchclient.dart';

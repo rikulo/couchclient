@@ -3,7 +3,6 @@
 // Author: henrichen
 
 import 'dart:async';
-import 'dart:uri';
 import 'dart:utf';
 import 'package:unittest/unittest.dart';
 import 'package:couchclient/couchclient.dart';

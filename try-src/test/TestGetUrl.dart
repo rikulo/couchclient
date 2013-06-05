@@ -1,6 +1,5 @@
     import '../../../../../../../D:/Program/dart/dart-sdk/lib/io/io.dart';
     import '../../../../../../../D:/Program/dart/dart-sdk/lib/async/async.dart';
-    import '../../../../../../../D:/Program/dart/dart-sdk/lib/uri/uri.dart';
     import '../../../../../../../D:/Program/dart/dart-sdk/lib/utf/utf.dart';
 
     void main() {

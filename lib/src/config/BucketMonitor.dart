@@ -46,7 +46,7 @@ class BucketMonitor extends Observable {
     }
 
     this.configParser = configParser;
-    this.host = cometStreamUri.domain;
+    this.host = cometStreamUri.host;
     this.port = cometStreamUri.port == -1 ? 80 : cometStreamUri.port;
 
     //TODO(20130514, henrichen): prepare a loop to monitor the uri

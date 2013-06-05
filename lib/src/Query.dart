@@ -339,7 +339,7 @@ class Query {
       }
     }
 
-    return encodeUriComponent(encoded);
+    return Uri.encodeComponent(encoded);
   }
 
   /**
