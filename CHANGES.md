@@ -1,7 +1,7 @@
 #Rikulo Couchbase Client
 
 * June 5, 2013
-  * Release version 0.3.0+3
+  * Release version 0.3.0+4
   * Make compatible with SDK version 0.5.13.1_r23552
   * issue 4: CouchClient.close() doesn't stop
   

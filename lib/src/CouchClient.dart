@@ -84,7 +84,7 @@ abstract class CouchClient implements MemcachedClient, Reconfigurable {
    *   specified and the document has been updated, ObserverStatus.MODIFIED
    *   would be returned in ObserveResult.status field.
    */
-  Future<Map<MemcachedNode, ObserveResult>> observe(String key, [int cas]);
+  Future<Map<SocketAddress, ObserveResult>> observe(String key, [int cas]);
 
   /**
    * Poll and observe a key with the given cas and persist settings.
