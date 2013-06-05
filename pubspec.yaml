@@ -1,5 +1,5 @@
 name: couchclient
-version: 0.3.0+2
+version: 0.3.0+3
 description: >
   A Couchbase client library written in Dart language.
 authors:
