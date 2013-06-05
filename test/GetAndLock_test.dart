@@ -14,6 +14,7 @@ void testGetAndLock(String key, CouchClient client) {
   Future f1 = client.getAndLock(key, 1) //lock for 1 seconds
     .then((val) {
       expect(val.data, equals(encodeUtf8('val100')));
+      print("wait 2 seconds....");
       return new Future.delayed(new Duration(seconds:2)); //wait 2 seconds
     })
     .then((_) {
@@ -36,6 +37,7 @@ void testGetAndLock2(String key, CouchClient client) {
   Future f1 = client.getAndLock(key, 3) //lock 3 seconds
     .then((val) {
       expect(val.data, equals(encodeUtf8('val100')));
+      print("wait 2 seconds....");
       return new Future.delayed(new Duration(seconds:2)); //wait for 2 seconds
     }).then((_) {
       return client.set(key, encodeUtf8('newVal100'));
@@ -52,7 +54,7 @@ void testGetAndLock2(String key, CouchClient client) {
 }
 
 void main() {
-  setupLogger();
+//  setupLogger();
   group('BinaryGetAndLockTest:', () {
     CouchClient client;
     setUp(() => cc.prepareCouchClient().then((c) => client = c));

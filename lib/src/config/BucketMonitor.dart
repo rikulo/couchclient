@@ -15,6 +15,7 @@ class BucketMonitor extends Observable {
   final String httpPass;
 
   Logger _logger;
+  bool _shutdown = false;
 
   Bucket bucket;
   HttpClient channel;
@@ -66,15 +67,15 @@ class BucketMonitor extends Observable {
   }
 
   // Connect to comet server and wait response
-  void _cometConnect() {
-    channel = new HttpClient();
-    prepareRequest(cometStreamUri, host)
+  Future<bool> _cometConnect() {
+    return prepareRequest(channel = new HttpClient(), cometStreamUri, host)
     .then((HttpClientRequest req) {
       return req.close();
     })
     .then((HttpClientResponse resp) {
       _logger.finest("Start bucket monitor host:$host, uri:$cometStreamUri");
-      resp.listen((bytes) {
+      resp.listen(
+        (bytes) {
           if (handler == null) { //handle response
             handler = new BucketUpdateResponseHandler();
             handler.setBucketMonitor(this);
@@ -83,39 +84,58 @@ class BucketMonitor extends Observable {
           handler.messageReceived(decodeUtf8(bytes));
         },
         onDone : () {
-          notifyDisconnected();
-          if (handler != null)
-            handler.disconnect(); //done read response
-          if (channel != null) {
-            channel.close();
-            channel = null;
+          if (!_shutdown) {
+            notifyDisconnected();
+            if (handler != null)
+              handler.disconnect(); //done read response
+            if (channel != null) {
+              channel.close();
+              channel = null;
+            }
           }
         },
         onError: (err) { //fail to read response
-          notifyDisconnected();
-          if (handler != null)
-            handler.exceptionCaught(err);
-          if (channel != null) {
-            channel.close();
-            channel = null;
-          }
+          _handleException(err);
+          _logger.finest("_cometConnect(): onError event in reading HttpResponse: $err");
         }
       );
+      return true;
+    })
+    .catchError(
+      (err) {
+        _handleException(err);
+        _logger.finest("_cometConnect(): exception in reading HttpResponse: $err");
+        return false;
+      }
+    );
+  }
+
+  void _handleException(err) {
+    if (!_shutdown) {
+      notifyDisconnected();
+      if (handler != null)
+        handler.exceptionCaught(err);
+      if (channel != null) {
+        channel.close();
+        channel = null;
+      }
+    }
+  }
+
+  Future<bool> startMonitor() {
+    return new Future.sync(() {
+      if (channel != null) { //already started
+        _logger.warning("Bucket monitor is already started.");
+        return true;
+      }
+      //connect to the comet push server
+      return _cometConnect();
     });
   }
 
-  void startMonitor() {
-    if (channel != null) { //already started
-      _logger.warning("Bucket monitor is already started.");
-      return;
-    }
-    //connect to the comet push server
-    _cometConnect();
-  }
-
-  Future<HttpClientRequest> prepareRequest(Uri uri, String h) {
+  Future<HttpClientRequest> prepareRequest(HttpClient hc, Uri uri, String h) {
     // Send the HTTP request.
-    Future<HttpClientRequest> reqf = HttpUtil.prepareHttpGet(channel, null, uri);
+    Future<HttpClientRequest> reqf = HttpUtil.prepareHttpGet(hc, null, uri);
     return reqf.then((HttpClientRequest req) {
       HttpHeaders headers = req.headers;
       headers.host = h;
@@ -156,7 +176,10 @@ class BucketMonitor extends Observable {
   void shutdown([int timeout = -1]) {
     deleteObservers();
     if (channel != null) {
-      channel.close();
+      _shutdown = true;
+      channel.close(force:true); //force shutdown
+      channel = null;
+      _logger.finest("shutdown monitor at $cometStreamUri");
     }
   }
 
@@ -166,7 +189,9 @@ class BucketMonitor extends Observable {
   void replaceConfig() {
     String response = handler.lastResponse;
     _logger.finest("lastResponse:$response");
-    Bucket updatedBucket = this.configParser.parseBucket(json.parse(response));
-    setBucket(updatedBucket);
+    if (response != null) {
+      Bucket updatedBucket = this.configParser.parseBucket(json.parse(response));
+      setBucket(updatedBucket);
+    }
   }
 }

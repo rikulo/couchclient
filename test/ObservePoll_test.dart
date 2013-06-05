@@ -75,8 +75,12 @@ void main() {
   setupLogger();
   group('ObserveOPTest:', () {
     CouchClient client;
-    setUp(() => cc.prepareCouchClient().then((c) => client = c));
-    tearDown(() => client.close());
+    setUp(() => cc.prepareCouchClient().then((c) {
+      client = c;
+      (client as CouchClientImpl).connectionFactory.observePollMax = 50; //timeout at 50 * 100
+      return client;
+    }));
+    tearDown(() {client.close(); client = null;});
     test('testObservePoll1', () => testObservePoll1(client));
     test('testObservePoll2', () => testObservePoll2(client));
     test('testObservePoll3', () => testObservePoll3(client));

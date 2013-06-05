@@ -96,11 +96,11 @@ class ConfigProvider {
             bucket, this.restUsr, this.restPwd, configParser);
           this.monitors[bucketname] = monitor;
           monitor.addObserver(obs);
-          monitor.startMonitor();
+          return monitor.startMonitor();
         } else {
           monitor.addObserver(obs);
+          return true;
         }
-        return true;
       });
     });
   }
@@ -121,6 +121,7 @@ class ConfigProvider {
   void shutdown() {
     for (BucketMonitor monitor in monitors.values)
       monitor.shutdown();
+    _logger.info("Shutdown monitors");
   }
 
   /**

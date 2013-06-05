@@ -44,6 +44,8 @@ class CouchClientImpl extends MemcachedClientImpl implements CouchClient {
     _logger = initLogger('couchclient', this);
   }
 
+  CouchbaseConnectionFactory get connectionFactory => _connFactory;
+
   Future<bool> addDesignDoc(DesignDoc doc) {
     PutDesignDocOP op = new PutDesignDocOP(_connFactory.bucketName, doc.name, doc.toJson());
     _handleHttpOperation(op);
@@ -104,7 +106,7 @@ class CouchClientImpl extends MemcachedClientImpl implements CouchClient {
        return handleBroadcastOperation(() =>
            opFactory.newObserveOP(key, cas), nodes.iterator)
        .then((results) {
-         results[primary].isPrimary = true;
+         results[primary.socketAddress].isPrimary = true;
          return results;
        });
     });
@@ -135,7 +137,7 @@ class CouchClientImpl extends MemcachedClientImpl implements CouchClient {
         final Duration obsPollInterval =
             new Duration(milliseconds: _connFactory.observePollInterval);
 
-        observePoll0(
+        _observePoll0(
             cmpl,
             key,
             cas,
@@ -155,7 +157,14 @@ class CouchClientImpl extends MemcachedClientImpl implements CouchClient {
     return cmpl.future;
   }
 
-  void observePoll0(
+  void close() {
+    if (isClosing) return;
+    super.close();
+    //TODO(20130605,henrichen): Shutdown the monitor channel
+    _connFactory.configProvider.shutdown();
+  }
+
+  void _observePoll0(
       Completer cmpl,
       String key,
       int cas,
@@ -179,8 +188,8 @@ class CouchClientImpl extends MemcachedClientImpl implements CouchClient {
       int observePersistReplica = 0;
       int observeReplica = 0;
       bool observePersistMaster = false;
-      for (MemcachedNode node in response.keys) {
-        final bool isMaster = node == master;
+      for (SocketAddress node in response.keys) {
+        final bool isMaster = node == master.socketAddress;
         final ObserveStatus status = response[node].status;
         if (isMaster && status == ObserveStatus.MODIFIED) {
           throw new ObservedModifiedException("Key was modified");
@@ -237,7 +246,7 @@ class CouchClientImpl extends MemcachedClientImpl implements CouchClient {
 
         return new Future.delayed(obsPollInterval)
         .then((_) =>
-            observePoll0( //recursive
+            _observePoll0( //recursive
                 cmpl,
                 key,
                 cas,

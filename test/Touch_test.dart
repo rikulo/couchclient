@@ -14,10 +14,12 @@ void testTouch(CouchClient client) {
   Future f1 = client.get('key100')
     .then((val) {
       expect(val.data, equals(encodeUtf8('val100')));
+      print("wait 1 second ...");
       return client.touch('key100', 1); //expire in 1 seconds
     }).then((b) {
       expect(b, isTrue);
-      return new Future.delayed(new Duration(seconds:2));
+      print("wait 2 seconds ...");
+      return new Future.delayed(new Duration(seconds:2)); //wait 2 seconds
     }).then((_) {
       return client.get('key100');
     });
