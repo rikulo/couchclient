@@ -21,7 +21,7 @@ void testObserve1(CouchClient client) {
   })
 //  .then((_) => client.gets('key0'))
   .then((_) => client.observe('key0'))
-  .then((Map<MemcachedNode, ObserveResult> rv) {
+  .then((Map<SocketAddress, ObserveResult> rv) {
     expect(rv.values.first.status, equals(ObserveStatus.PERSISTED));
   });
   expect(f, completes);
@@ -33,7 +33,7 @@ void testObserve2(CouchClient client) {
   Future f = client.set('key0', encodeUtf8('"value0"'))
     .then((_) => client.gets('key0'))
     .then((GetResult rv) => client.observe('key0'))
-    .then((Map<MemcachedNode, ObserveResult> rv) {
+    .then((Map<SocketAddress, ObserveResult> rv) {
       expect(rv.values.first.status, equals(ObserveStatus.NOT_PERSISTED));
     });
   expect(f, completes);
@@ -42,7 +42,7 @@ void testObserve2(CouchClient client) {
 //not found
 void testObserve3(CouchClient client) {
   Future f = client.observe('key101')
-    .then((Map<MemcachedNode, ObserveResult> rv) {
+    .then((Map<SocketAddress, ObserveResult> rv) {
       expect(rv.values.first.status, equals(ObserveStatus.NOT_FOUND));
     });
   expect(f, completes);
@@ -55,7 +55,7 @@ void testObserve4(CouchClient client) {
     .then((GetResult rv) => cas = rv.cas)
     .then((_) => client.set('key0', encodeUtf8('"value0"')))
     .then((_) => client.observe('key0'))
-    .then((Map<MemcachedNode, ObserveResult> rv) {
+    .then((Map<SocketAddress, ObserveResult> rv) {
       expect(rv.values.first.status, equals(ObserveStatus.NOT_PERSISTED));
       expect(rv.values.first.cas, isNot(equals(cas)));
     });
@@ -69,7 +69,7 @@ void testObserve5(CouchClient client) {
     .then((GetResult rv) => cas = rv.cas)
     .then((_) => client.delete('key0'))
     .then((_) => client.observe('key0'))
-    .then((Map<MemcachedNode, ObserveResult> rv) {
+    .then((Map<SocketAddress, ObserveResult> rv) {
       expect(rv.values.first.status, equals(ObserveStatus.LOGICALLY_DELETED));
     })
     .then((_) => client.set('key0', encodeUtf8('"value0"')));
