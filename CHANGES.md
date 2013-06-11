@@ -1,9 +1,14 @@
 #Rikulo Couchbase Client
+
+* June 11, 2013
+  * Release version 0.3.0+6
+  * Make compatible with Dart SDK version 0.5.16.0_r23799
+
 * June 7, 2013
-  * Releaes version 0.3.0+5
-  * For CouchClient#observe() method, the return value was 
-    Future<Map<MemcachedNode, ObserveResult>> and now changed to 
-    Future<Map<SocketAddress, ObserverResult>>.
+  * Release version 0.3.0+5
+  * For `CouchClient#observe()` method, the return value was 
+    `Future<Map<MemcachedNode, ObserveResult>>` and now changed to 
+    `Future<Map<SocketAddress, ObserverResult>>`.
 
 * June 5, 2013
   * Release version 0.3.0+4

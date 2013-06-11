@@ -286,8 +286,8 @@ class CouchbaseConnectionFactory extends BinaryConnectionFactory {
   /**
    * Resubscribe processing.
    */
-  const int backoffTime = 1000;
-  const int maxWaitTime = 10000;
+  static const int backoffTime = 1000;
+  static const int maxWaitTime = 10000;
   void resubscribeProcess(int reconnectAttempt) {
     int waitTime = (reconnectAttempt++)*backoffTime;
     if(reconnectAttempt >= 10)
