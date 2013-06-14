@@ -18,8 +18,14 @@ class RestClientImpl implements RestClient {
     _logger = initLogger('couchclient', this);
   }
 
-  Future<List<DesignDoc>> getDesignDocs() {
-    GetDesignDocsOP op = new GetDesignDocsOP(_connFactory.bucketName);
+  Future<List<DesignDoc>> listDesignDocs() {
+    ListDesignDocsOP op = new ListDesignDocsOP(_connFactory.bucketName);
+    _handleRestOperation(op);
+    return op.future;
+  }
+
+  Future<List<String>> listBucketNames() {
+    ListBucketsOP op = new ListBucketsOP();
     _handleRestOperation(op);
     return op.future;
   }

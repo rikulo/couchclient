@@ -50,13 +50,16 @@ part 'src/config/ReconfigurableObserver.dart';
 part 'src/config/Status.dart';
 part 'src/config/Vbucket.dart';
 
+//op/rest
+part 'src/op/rest/ListBucketsOP.dart';
+part 'src/op/rest/ListDesignDocsOP.dart';
+
 //op/views
 part 'src/op/views/ViewBase.dart';
 part 'src/op/views/DeleteDesignDocOP.dart';
 part 'src/op/views/DeleteHttpOP.dart';
 part 'src/op/views/DocsOP.dart';
 part 'src/op/views/GetDesignDocOP.dart';
-part 'src/op/views/GetDesignDocsOP.dart';
 part 'src/op/views/GetHttpOP.dart';
 part 'src/op/views/GetSpatialViewOP.dart';
 part 'src/op/views/GetViewOP.dart';

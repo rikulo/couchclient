@@ -5,16 +5,16 @@
 part of couchclient;
 
 /**
- * List design documents and views on couchbase(via Restful interface);
+ * List design documents on couchbase(via Restful interface);
  * see https://coderwall.com/p/lg_sbw
  */
-class GetDesignDocsOP extends GetHttpOP {
+class ListDesignDocsOP extends GetHttpOP {
   final Completer<List<DesignDoc>> _cmpl; //completer to complete the future of this operation
 
   Future<List<DesignDoc>> get future
   => _cmpl.future;
 
-  GetDesignDocsOP(String bucketName, [int msecs])
+  ListDesignDocsOP(String bucketName, [int msecs])
       : _cmpl = new Completer() {
 
     _cmd = Uri.parse('/pools/default/buckets/$bucketName/ddocs');

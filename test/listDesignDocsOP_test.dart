@@ -9,12 +9,12 @@ import 'package:memcached_client/memcached_client.dart';
 import 'package:couchclient/couchclient.dart';
 import 'CouchbaseTestUtil.dart' as cc;
 
-//test RestClient#getDesignDocsOP
-void testGetDesignDocsOP0(CouchClient client) {
+//test RestClient#listBucketNamesOP
+void testListBucketNamesOP0(CouchClient client) {
   String mapfunc = 'function(doc, meta) {emit([doc.brewery_id]);}';
   ViewDesign view1 = new ViewDesign('testview', mapfunc);
   Future f = client.addDesignDoc(new DesignDoc("testddoc", views:[view1]))
-  .then((_) => client.restClient.getDesignDocs())
+  .then((_) => client.restClient.listDesignDocs())
   .then((ddocs) {
     bool exist = false;
     for (DesignDoc ddoc in ddocs) {
@@ -31,10 +31,10 @@ void testGetDesignDocsOP0(CouchClient client) {
 
 void main() {
   setupLogger();
-  group('GetDesignDocsOPTest:', () {
+  group('ListBucketNamesOPTest:', () {
     CouchClient client;
     setUp(() => cc.prepareCouchClient().then((c) => client = c));
     tearDown(() => client.close());
-    test('TestGetDesignDocsOP0', () => testGetDesignDocsOP0(client));
+    test('TestListBucketNamesOP0', () => testListBucketNamesOP0(client));
   });
 }

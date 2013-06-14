@@ -346,10 +346,6 @@ class CouchClientImpl extends MemcachedClientImpl implements CouchClient {
     _viewConn.addOP(op);
   }
 
-  void _handleRestOperation(HttpOP op) {
-    _restConn.addOP(op);
-  }
-
 //--Reconfigurable--//
   bool _reconfiguring = false;
   void reconfigure(Bucket bucket) {

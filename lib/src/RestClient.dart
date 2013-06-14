@@ -11,5 +11,10 @@ abstract class RestClient {
   /**
    * Retrieve all DesignDocs.
    */
-  Future<List<DesignDoc>> getDesignDocs();
+  Future<List<DesignDoc>> listDesignDocs();
+
+  /**
+   * Retrieve all Bucket names.
+   */
+  Future<List<String>> listBucketNames();
 }
