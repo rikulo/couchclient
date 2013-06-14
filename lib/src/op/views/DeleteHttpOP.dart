@@ -5,9 +5,9 @@
 part of couchclient;
 
 abstract class DeleteHttpOP extends HttpOP {
-  Future<String> handleCommand(HttpClient hc, Uri baseUri, Uri cmd,
+  Future<HttpResult> handleCommand(HttpClient hc, Uri baseUri, Uri cmd,
       AuthDescriptor authDescriptor) {
-    Completer<String> cmpl = new Completer();
+    Completer<HttpResult> cmpl = new Completer();
     final String user = authDescriptor == null ? null : authDescriptor.bucket;
     final String pass = authDescriptor == null ? null : authDescriptor.password;
     Future<HttpResult> rf = HttpUtil.uriDelete(hc, baseUri, cmd, user, pass);
@@ -18,15 +18,18 @@ abstract class DeleteHttpOP extends HttpOP {
 //      hc.close();
 //      return decodeUtf8(r.contents);
 //    });
-    rf.then((r) {
-      hc.close();
+    rf.then((result) {
       String path = cmd.path;
       int j = path.lastIndexOf('/');
       String docName = path.substring(j+1);
-      if (r.status == 200) {
-        cmpl.complete('{"ok":true,"id":"_design/$docName"}');
+      if (result.status == 200) {
+        cmpl.complete(
+            new HttpResult(result.status,
+                result.headers, encodeUtf8('{"ok":true,"id":"_design/$docName"}')));
       } else {
-        cmpl.complete('{"ok":false,"id":"_design/$docName"}');
+        cmpl.complete(
+            new HttpResult(result.status,
+                result.headers, encodeUtf8('{"ok":false,"id":"_design/$docName"}')));
       }
     });
     return cmpl.future;

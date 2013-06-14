@@ -38,9 +38,9 @@ abstract class HttpOP {
       state = OPState.CANCELED;
   }
 
-  void processResponse(String result);
+  void processResponse(HttpResult result);
 
-  Future<String> handleCommand(HttpClient hc, Uri baseUri, Uri cmd,
+  Future<HttpResult> handleCommand(HttpClient hc, Uri baseUri, Uri cmd,
       AuthDescriptor authDescriptor);
 
   /**

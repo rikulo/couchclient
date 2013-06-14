@@ -19,7 +19,8 @@ class GetSpatialViewOP extends GetHttpOP {
     _cmd = Uri.parse('/$bucketName/_design/$designDocName');
   }
 
-  void processResponse(String base) {
+  void processResponse(HttpResult result) {
+    String base = decodeUtf8(result.contents);
     _logger.finest("GetSpatialViewOP:base->[$base]");
     Map jo = json.parse(base);
     Map<String, Map> viewsjo = jo['spatial'];

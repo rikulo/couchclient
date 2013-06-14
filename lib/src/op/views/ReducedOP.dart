@@ -8,7 +8,8 @@ class ReducedOP extends DocsOP {
   ReducedOP(ViewBase view, Query query, [int msecs])
       : super(view, query, msecs);
 
-  void processResponse(String base) {
+  void processResponse(HttpResult result) {
+    String base = decodeUtf8(result.contents);
     _logger.finest("ReducedOP:base->[$base]");
     Map jo = json.parse(base);
     List<ViewRow> viewRows = new List();

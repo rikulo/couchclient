@@ -51,6 +51,9 @@ part 'src/config/Status.dart';
 part 'src/config/Vbucket.dart';
 
 //op/rest
+part 'src/op/rest/AuthType.dart';
+part 'src/op/rest/BucketType.dart';
+part 'src/op/rest/CreateBucketOP.dart';
 part 'src/op/rest/ListBucketsOP.dart';
 part 'src/op/rest/ListDesignDocsOP.dart';
 
@@ -67,6 +70,7 @@ part 'src/op/views/HttpOP.dart';
 part 'src/op/views/HttpOPChannel.dart';
 part 'src/op/views/NoDocsOP.dart';
 part 'src/op/views/OnErrorType.dart';
+part 'src/op/views/PostHttpOP.dart';
 part 'src/op/views/PutDesignDocOP.dart';
 part 'src/op/views/PutHttpOP.dart';
 part 'src/op/views/ReducedOP.dart';

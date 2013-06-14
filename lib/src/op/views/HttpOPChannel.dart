@@ -144,9 +144,9 @@ class HttpOPChannel implements OPChannel<int, HttpOP> {
     Uri cmd = op.cmd;
     HttpClient hc = new HttpClient();
     try {
-      Future<String> f = op.handleCommand(hc, _baseUri, cmd, _authDescriptor);
-      f.then((String buf) {
-        op.processResponse(buf);
+      Future<HttpResult> f = op.handleCommand(hc, _baseUri, cmd, _authDescriptor);
+      f.then((result) {
+        op.processResponse(result);
       });
       //wait no response: we post the command and assume complete
       op.complete();

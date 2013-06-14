@@ -18,7 +18,8 @@ class GetDesignDocOP extends GetHttpOP {
     _cmd = Uri.parse('/$bucketName/_design/$designDocName');
   }
 
-  void processResponse(String base) {
+  void processResponse(HttpResult result) {
+    String base = decodeUtf8(result.contents);
     Map jo = json.parse(base);
     if (jo.containsKey('error')) {
       _cmpl.complete(null);

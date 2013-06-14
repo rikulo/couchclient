@@ -58,49 +58,5 @@ class RestConnection {
     _nexti = (++_nexti) % couchNodes.length;
     return couchNodes[_nexti];
   }
-
-//  //--Reconfigurable--//
-//  bool _reconfiguring = false;
-//  /**
-//   * Reconfigures the connected RestNodes.
-//   *
-//   * Whenever reconfiguration event heppens, new RestNodes may need to be added
-//   * or old ones need to be removed from the current configuration. This method
-//   * takes care that those operations are performed in the correct order.
-//   */
-//  void reconfigure(Bucket bucket) {
-//    if (_reconfiguring) return;
-//    try {
-//      _reconfiguring = true;
-//      final newSaddrs =
-//          new HashSet<SocketAddress>.from(
-//              HttpUtil.parseSocketAddressesFromUris(bucket.config.couchServers));
-//
-//      //split current nodes into "odd" nodes and "stay" nodes
-//      List<RestNode> oddNodes = new List();
-//      List<RestNode> stayNodes = new List();
-//
-//      for (RestNode node in couchNodes) {
-//        if (newSaddrs.remove(node.socketAddress)) {
-//          stayNodes.add(node);
-//        } else {
-//          oddNodes.add(node);
-//        }
-//      }
-//
-//      //create new nodes and merge into one set of nodes
-//      List<RestNode> newNodes = createRestNodes(new List.from(newSaddrs));
-//      stayNodes.addAll(newNodes);
-//
-//      couchNodes = stayNodes;
-//
-//      //shutdown "odd" nodes
-//      for (RestNode node in oddNodes) {
-//        node.close();
-//      }
-//    } finally {
-//      _reconfiguring = false;
-//    }
-//  }
 }
 

@@ -13,12 +13,13 @@ class PutDesignDocOP extends PutHttpOP {
   final String designDocName;
 
   PutDesignDocOP(String bucketName, this.designDocName, String value)
-      : _cmpl = new Completer(),
-        super(value) {
+      : _cmpl = new Completer() {
+    this.value = value;
     _cmd = Uri.parse('/$bucketName/_design/$designDocName');
   }
 
-  void processResponse(String base) {
+  void processResponse(HttpResult result) {
+    String base = decodeUtf8(result.contents);
     _logger.finest("PutDesignDocOP: base->[$base]");
     Map jo = json.parse(base);
     bool ok = jo['ok'];

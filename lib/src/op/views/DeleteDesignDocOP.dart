@@ -18,7 +18,8 @@ class DeleteDesignDocOP extends DeleteHttpOP {
     _cmd = Uri.parse('/$bucketName/_design/$designDocName');
   }
 
-  void processResponse(String base) {
+  void processResponse(HttpResult result) {
+    String base = decodeUtf8(result.contents);
     _logger.finest("DeleteDesignDocOP:base->[$base]");
     if (!base.isEmpty) {
       Map jo = json.parse(base);

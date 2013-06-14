@@ -20,7 +20,8 @@ class ListBucketsOP extends GetHttpOP {
     _cmd = Uri.parse('/pools/default/buckets/');
   }
 
-  void processResponse(String base) {
+  void processResponse(HttpResult result) {
+    String base = decodeUtf8(result.contents);
     List<String> names = new List();
     if (base != null && base.trim() != '') {
       List jo = json.parse(base);

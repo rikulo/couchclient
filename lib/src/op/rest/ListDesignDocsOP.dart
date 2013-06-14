@@ -20,7 +20,8 @@ class ListDesignDocsOP extends GetHttpOP {
     _cmd = Uri.parse('/pools/default/buckets/$bucketName/ddocs');
   }
 
-  void processResponse(String base) {
+  void processResponse(HttpResult result) {
+    String base = decodeUtf8(result.contents);
     Map jo = json.parse(base);
     if (jo.containsKey('error')) {
       _cmpl.complete(null);

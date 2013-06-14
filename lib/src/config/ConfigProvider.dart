@@ -145,7 +145,8 @@ class ConfigProvider {
 
     Uri baseUri = baseList[idx];
     return _readUri(null, baseUri, restUsr, restPwd)
-    .then((String base) {
+    .then((HttpResult result) {
+      String base = decodeUtf8(result.contents);
       if (base.trim().isEmpty) {
         return _readPools0(bucketname, idx+1); //check next Pool
       }
@@ -158,7 +159,8 @@ class ConfigProvider {
       List<Future<Pool>> poolfs = new List();
       for (Pool pool in poolMap.values) {
         Future<Pool> fpool = _readUri(baseUri, pool.uri, restUsr, restPwd)
-        .then((String poolstr) {
+        .then((HttpResult result) {
+          String poolstr = decodeUtf8(result.contents);
           _logger.finest("pool->$poolstr");
           configParser.loadPool(pool, poolstr);
           return pool;
@@ -174,7 +176,8 @@ class ConfigProvider {
         for (Pool pool in pools) {
           _logger.finest("pool.bucketsUri->${pool.bucketsUri}");
           Future<Pool> fpool = _readUri(baseUri, pool.bucketsUri, restUsr, restPwd)
-          .then((String bucketsStr) {
+          .then((HttpResult result) {
+            String bucketsStr = decodeUtf8(result.contents);
             Map<String, Bucket> bucketsForPool =
                 configParser.parseBuckets(bucketsStr);
             pool.replaceBuckets(bucketsForPool);
@@ -211,7 +214,7 @@ class ConfigProvider {
     });
   }
 
-  Future<String> _readUri(Uri base, Uri resource, String usr, String pass) {
+  Future<HttpResult> _readUri(Uri base, Uri resource, String usr, String pass) {
     Map<String, String> headers = new LinkedHashMap();
     headers[HttpHeaders.ACCEPT] = "application/json";
     headers[HttpHeaders.USER_AGENT] = "Couchbase Dart Client";
