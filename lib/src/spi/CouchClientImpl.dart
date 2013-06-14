@@ -5,6 +5,7 @@
 part of couchclient;
 
 class CouchClientImpl extends MemcachedClientImpl implements CouchClient {
+  RestClient _restClient;
   ViewConnection _viewConn;
   CouchbaseConnectionFactory _connFactory;
   Logger _logger;
@@ -155,6 +156,13 @@ class CouchClientImpl extends MemcachedClientImpl implements CouchClient {
     .catchError((err) => cmpl.completeError(err));
 
     return cmpl.future;
+  }
+
+  RestClient get restClient {
+    if (_restClient == null) {
+      _restClient = new RestClientImpl(_connFactory);
+    }
+    return _restClient;
   }
 
   void close() {
@@ -338,7 +346,11 @@ class CouchClientImpl extends MemcachedClientImpl implements CouchClient {
     _viewConn.addOP(op);
   }
 
-  //--Reconfigurable--//
+  void _handleRestOperation(HttpOP op) {
+    _restConn.addOP(op);
+  }
+
+//--Reconfigurable--//
   bool _reconfiguring = false;
   void reconfigure(Bucket bucket) {
     if (_reconfiguring) return;

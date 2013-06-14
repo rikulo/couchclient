@@ -22,27 +22,32 @@ class GetDesignDocOP extends GetHttpOP {
     Map jo = json.parse(base);
     if (jo.containsKey('error')) {
       _cmpl.complete(null);
-      return;
+    } else {
+      _cmpl.complete(_newDesignDoc(designDocName, jo));
     }
-    String language = jo['language'];
-    Map<String, Map> viewsjo = jo['views'];
-    List<ViewDesign> views = new List();
-    if (viewsjo != null) {
-      for(String viewname in viewsjo.keys) {
-        Map mapjo = viewsjo[viewname];
-        views.add(new ViewDesign(viewname, mapjo['map'], mapjo['reduce']));
-      }
-    }
-    Map<String, Map> spatialViewsjo = jo['spatial'];
-    List<SpatialViewDesign> spatialViews = new List();
-    if (spatialViewsjo != null) {
-      for(String viewname in spatialViewsjo.keys) {
-        Map mapjo = spatialViewsjo[viewname];
-        spatialViews.add(new SpatialViewDesign(viewname, mapjo['map']));
-      }
-    }
-    _cmpl.complete(new DesignDoc(designDocName, language:language, views:views, spatialViews:spatialViews));
   }
 }
+
+DesignDoc _newDesignDoc(String ddocName, Map jo) {
+  String language = jo['language'];
+  Map<String, Map> viewsjo = jo['views'];
+  List<ViewDesign> views = new List();
+  if (viewsjo != null) {
+    for(String viewname in viewsjo.keys) {
+      Map mapjo = viewsjo[viewname];
+      views.add(new ViewDesign(viewname, mapjo['map'], mapjo['reduce']));
+    }
+  }
+  Map<String, Map> spatialViewsjo = jo['spatial'];
+  List<SpatialViewDesign> spatialViews = new List();
+  if (spatialViewsjo != null) {
+    for(String viewname in spatialViewsjo.keys) {
+      Map mapjo = spatialViewsjo[viewname];
+      spatialViews.add(new SpatialViewDesign(viewname, mapjo['map']));
+    }
+  }
+  return new DesignDoc(ddocName, language:language, views:views, spatialViews:spatialViews);
+}
+
 
 

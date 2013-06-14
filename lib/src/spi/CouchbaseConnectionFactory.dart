@@ -141,6 +141,12 @@ class CouchbaseConnectionFactory extends BinaryConnectionFactory {
   ViewConnection createViewConnection(List<SocketAddress> saddrs) =>
       new ViewConnection(saddrs, this);
 
+  RestNode createRestNode(SocketAddress saddr) =>
+      new RestNode(saddr, opTimeout, authDescriptor);
+
+  RestConnection createRestConnection(List<SocketAddress> saddrs) =>
+      new RestConnection(saddrs, this);
+
   ConfigProvider get configProvider => _configProvider;
 
   void set configProvider(ConfigProvider configProvider) {

@@ -24,6 +24,11 @@ part of couchclient;
  */
 abstract class CouchClient implements MemcachedClient, Reconfigurable {
   /**
+   * Get the RESTful client associated with this CouchClient.
+   */
+  RestClient get restClient;
+
+  /**
    * Get document as a GetResult of the provided key and lock its write
    * access for the specified [locktime] in seconds. The
    * maximum lock time is 30 seconds; any number more than 30 or less than zero
