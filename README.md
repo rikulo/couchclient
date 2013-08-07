@@ -1,6 +1,6 @@
-#Rikulo CouchClient
+#CouchClient
 
-Rikulo CouchClient is the client SDK that enables accessing to the NoSQL document 
+CouchClient is the client SDK that enables accessing to the NoSQL document 
 database [Couchbase](http://www.couchbase.com/) in Dart language.
 
 * [Home](http://rikulo.org)
@@ -9,7 +9,7 @@ database [Couchbase](http://www.couchbase.com/) in Dart language.
 * [Git Repository](https://github.com/rikulo/couchclient)
 * [Issues](https://github.com/rikulo/couchclient/issues)
 
-Rikulo CouchClient is distributed under the Apache 2.0 License.
+CouchClient is distributed under the Apache 2.0 License.
 
 ##Install from Dart Pub Repository
 
@@ -36,7 +36,7 @@ For more information, please refer to [Pub: Dependencies]
 
 ##Usage
 
-Using Rikulo CouchClient is straightforward. Connect to the server and
+Using CouchClient is straightforward. Connect to the server and
 use the client's APIs to access the database.
 
     import "dart:uri";
@@ -90,15 +90,14 @@ You are welcome to submit [bugs and feature requests]
 (https://github.com/rikulo/couchclient/issues). Or even better if you can 
 fix or implement them!
 
-###Fork Rikulo CouchClient
+###Fork CouchClient
 
 If you'd like to contribute back to the core, you can [fork this repository]
 (https://help.github.com/articles/fork-a-repo) and send us a pull request, 
 when it is ready.
 
-Please be aware that one of Rikulo CouchClient's design goals is to 
+Please be aware that one of CouchClient's design goals is to 
 keep the sphere of API as neat and consistency as possible. Strong enhancement 
 always demands greater consensus.
 
-If you are new to Git or GitHub, please read 
-[this guide](https://help.github.com/) first.
+If you are new to Git or GitHub, please read [this guide](https://help.github.com/) first.
