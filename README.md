@@ -5,6 +5,8 @@ database [Couchbase](http://www.couchbase.com/) in Dart language.
 
 * [Home](http://rikulo.org)
 * [Discussion](http://stackoverflow.com/questions/tagged/rikulo)
+* [Tutorial](http://blog.rikulo.org/posts/2013/May/General/couchclient/)
+* [Git Repository](https://github.com/rikulo/couchclient)
 * [Issues](https://github.com/rikulo/couchclient/issues)
 
 Rikulo CouchClient is distributed under the Apache 2.0 License.

@@ -3,7 +3,8 @@ version: 0.3.0+6
 author: Henri Chen <henrichen@rikulo.org>
 description: |
   A Couchbase client library written in Dart language.
-homepage: http://rikulo.org
+homepage: https://github.com/rikulo/couchclient
+documentation: http://blog.rikulo.org/posts/2013/May/General/couchclient/
 dependencies:
   crypto: any
   logging: any
