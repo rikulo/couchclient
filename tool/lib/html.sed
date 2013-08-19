@@ -1,7 +1,7 @@
-s|<title>Dart Documentation / Dart Documentation</title>|<title>API Reference / Rikulo CouchClient</title>|
-s|Dart Documentation</title>|API Reference / Rikulo CouchClient</title>|
+s|<title>Dart Documentation / Dart Documentation</title>|<title>API Reference / CouchClient</title>|
+s|Dart Documentation</title>|API Reference / CouchClient</title>|
 s|<link rel="shortcut icon"[^>]*>|<link rel="shortcut icon" type="image/ico" href="http://rikulo.org/resource/img/favicon.ico" />|
-s|<h2>Dart Documentation</h2>|<h2>Rikulo CouchClient API Reference</h2>|
+s|<h2>Dart Documentation</h2>|<h2>CouchClient API Reference</h2>|
 s|<a href=".*index.html"><div class="logo"></div></a>|<a href="http://rikulo.org"><img src="http://rikulo.org/resource/img/rikulo_api_logo.png" align="center" border="0"/></a>|
 s|Dart Documentation</a>|API Reference {{{version}}}</a>|
 s|</head>|<script type="text/javascript">\
