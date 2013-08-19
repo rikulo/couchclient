@@ -3,7 +3,6 @@
 // Author: henrichen
 
 import 'dart:async';
-import 'dart:utf';
 import 'package:unittest/unittest.dart';
 import 'package:memcached_client/memcached_client.dart';
 import 'package:couchclient/couchclient.dart';
@@ -11,7 +10,14 @@ import 'CouchbaseTestUtil.dart' as cc;
 
 //test getDesignDocOP
 void testGetDesignDocOP0(CouchClient client, String designDocName) {
-  expect(client.getDesignDoc(designDocName), completion(isNotNull));
+  ViewDesign view1 = new ViewDesign('xyzview', 'function(doc, meta) {emit([doc.brewery_id]);}');
+  Future f = client.addDesignDoc(new DesignDoc(designDocName, views:[view1]))
+  .then((ok) {
+    expect(ok, true);
+    return client.getDesignDoc(designDocName);
+  });
+
+  expect(f, completion(isNotNull));
 }
 
 void testGetDesignDocOP1(CouchClient client, String designDocName) {
@@ -24,7 +30,7 @@ void main() {
     CouchClient client;
     setUp(() => cc.prepareCouchClient().then((c) => client = c));
     tearDown(() => client.close());
-    test('TestGetDesignDocOP0', () => testGetDesignDocOP0(client, 'beer'));
+    test('TestGetDesignDocOP0', () => testGetDesignDocOP0(client, 'killme'));
     test('TestGetDesignDocOP1', () => testGetDesignDocOP1(client, 'noSuchDoc'));
   });
 }

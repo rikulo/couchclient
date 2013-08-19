@@ -91,7 +91,7 @@ class CouchClientImpl extends MemcachedClientImpl implements CouchClient {
     }
   }
 
-  Future<Map<SocketAddress, ObserveResult>> observe(String key, [int cas]) {
+  Future<Map<SocketAddress, ObserveResult>> observe(String key, {int cas}) {
     return _connFactory.vbucketConfig
     .then((Config cfg) {
        VbucketNodeLocator vlocator = locator;
@@ -188,7 +188,7 @@ class CouchClientImpl extends MemcachedClientImpl implements CouchClient {
 
     _checkObserveReplica(key, numPersistReplica, numReplica, cfg, vlocator);
 
-    this.observe(key, cas)
+    this.observe(key, cas:cas)
     .then((response) {
       int vb = vlocator.getVbucketIndex(key);
       MemcachedNode master = vlocator.getServerByIndex(cfg.getMaster(vb));

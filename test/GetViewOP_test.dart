@@ -34,7 +34,7 @@ void testGetViewOP0(CouchClient client) {
     expect(view, isNotNull);
     expect(view.viewName, equals("by_name"));
     expect(view.designDocName, equals("beer"));
-    expect(view.bucketName, equals("beer-sample"));
+    expect(view.bucketName, equals("default"));
     expect(view.hasMap, isTrue);
     expect(view.hasReduce, isFalse);
   });

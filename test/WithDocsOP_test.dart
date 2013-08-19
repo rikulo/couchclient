@@ -11,14 +11,14 @@ import 'CouchbaseTestUtil.dart' as cc;
 
 String VIEW = '''
 function (doc, meta) {
-  if (doc.type && doc.name && doc.type == "beer") {
+  if (doc.type && doc.name && doc.type == "beerX") {
     emit(doc.name, meta.id);
   }
 }''';
 
 Future writeDesignView(CouchClient client, String designDocName, String viewName) {
   var fact = new CouchbaseConnectionFactory(
-      [Uri.parse("http://localhost:8091/pools")], "beer-sample", "");
+      [Uri.parse("http://localhost:8091/pools")], "default", "");
 
   // Prepare View Design
   ViewDesign vd = new ViewDesign(viewName, VIEW);
@@ -36,21 +36,35 @@ void testWithDocsOP0(CouchClient client, String designDocName, String viewName) 
     expect(view, isNotNull);
     expect(view.viewName, equals("by_name"));
     expect(view.designDocName, equals("beer"));
-    expect(view.bucketName, equals("beer-sample"));
+    expect(view.bucketName, equals("default"));
     expect(view.hasMap, isTrue);
     expect(view.hasReduce, isFalse);
-    Query query = new Query()
-      ..limit = 10
-      ..descending = true
-      ..includeDocs = true;
-    return client.query(view, query);
-  })
-  .then((resp) {
-    print("---------------------------");
-    expect(resp.rows.length, equals(10));
-    for(ViewRowWithDocs row in resp.rows) {
-      expect(row.doc, isNotNull);
-    }
+    List<Future> fs = new List();
+    for (int j = 0; j < 10; ++j)
+      fs.add(client.set("beer$j", encodeUtf8('{"name": "beer$j", "type": "beerX"}'))
+          .then((_) => client.observePoll("beer$j", persistTo: PersistTo.ONE)));
+    return Future.wait(fs)
+    .then((_) {
+      Query query = new Query()
+        ..limit = 10
+        ..stale = Stale.FALSE
+        ..descending = true
+        ..includeDocs = true;
+      return client.query(view, query);
+    })
+    .then((resp) {
+      print("---------------------------");
+      expect(resp.rows.length, equals(10));
+      for(ViewRowWithDocs row in resp.rows) {
+        expect(row.doc, isNotNull);
+      }
+    })
+    .then((_) {
+      List<Future> dfs = new List();
+      for (int j = 0; j < 10; ++j)
+        dfs.add(client.delete("beer$j"));
+      return Future.wait(dfs);
+    });
   });
   expect(f, completes);
 }

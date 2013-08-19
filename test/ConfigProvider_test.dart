@@ -3,7 +3,6 @@
 // Author: henrichen
 
 import 'dart:async';
-import 'dart:utf';
 import 'package:unittest/unittest.dart';
 import 'package:couchclient/couchclient.dart';
 
@@ -35,7 +34,7 @@ void main() {
     setUp(() => provider = new ConfigProvider(baseList, REST_USER, REST_PWD));
     test('TestBucketConfig', () => testGetBucketConfig(provider));
     test('TestServers0', () => testServers(provider, 'default'));
-    test('TestServers1', () => testServers(provider, 'beer-sample'));
+//    test('TestServers1', () => testServers(provider, 'beer-sample'));
   });
 }
 

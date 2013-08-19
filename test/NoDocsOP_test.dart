@@ -15,7 +15,7 @@ import 'CouchbaseTestUtil.dart' as cc;
  */
 String VIEW = '''
 function (doc, meta) {
-  if (doc.type && doc.name && doc.type == "beer") {
+  if (doc.type && doc.name && doc.type == "beerX") {
     emit(doc.name, meta.id);
   }
 }''';
@@ -27,26 +27,39 @@ void testNoDocsOP0(CouchClient client) {
   // Prepare Design document with the name "beer"
   DesignDoc dd = new DesignDoc("beer", views: [vd]);
   // Add the DesignDocument "beer" into database
-  Future f = client.addDesignDoc(dd);
-  f.then((_) =>client.getView("beer", "by_name"))
+  Future f = client.addDesignDoc(dd).then((_) =>client.getView("beer", "by_name"))
   .then((view) {
     expect(view, isNotNull);
     expect(view.viewName, equals("by_name"));
     expect(view.designDocName, equals("beer"));
-    expect(view.bucketName, equals("beer-sample"));
+    expect(view.bucketName, equals("default"));
     expect(view.hasMap, isTrue);
     expect(view.hasReduce, isFalse);
-    Query query = new Query();
-    query.limit = 10;
-    query.descending = true;
-    return client.query(view, query);
-  })
-  .then((resp) {
-    print("---------------------------");
-    expect(resp.rows.length, equals(10));
-    for(ViewRow row in resp.rows) {
-      expect(row.doc, isNull);
-    }
+    List<Future> fs = new List();
+    for (int j = 0; j < 10; ++j)
+      fs.add(client.set("beer$j", encodeUtf8('{"name": "beer$j", "type": "beerX"}'))
+          .then((_) => client.observePoll("beer$j", persistTo: PersistTo.ONE)));
+    return Future.wait(fs)
+    .then((_) {
+      Query query = new Query();
+      //query.limit = 10;
+      query.stale = Stale.FALSE;
+      query.descending = true;
+      return client.query(view, query);
+    })
+    .then((resp) {
+      print("---------------------------");
+      expect(resp.rows.length, equals(10));
+      for(ViewRow row in resp.rows) {
+        expect(row.doc, isNull);
+      }
+    })
+    .then((_) {
+      List<Future> dfs = new List();
+      for (int j = 0; j < 10; ++j)
+        dfs.add(client.delete("beer$j"));
+      return Future.wait(dfs);
+    });
   });
   expect(f, completes);
 }

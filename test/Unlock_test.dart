@@ -38,7 +38,7 @@ void testUnlock2(String key, CouchClient client) {
   Future f1 = client.getAndLock(key, 3) //lock 3 seconds
     .then((val) {
       expect(val.data, equals(encodeUtf8('val100')));
-      return client.unlock(key, val.cas);
+      return client.unlock(key, cas: val.cas);
     }).then((_) {
       expect(client.set(key, encodeUtf8('newVal100')), completion(isTrue));
       return client.get(key);

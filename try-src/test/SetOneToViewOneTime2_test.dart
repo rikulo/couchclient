@@ -55,7 +55,7 @@ Future<bool> query(CouchClient client) {
   query.key = 'viewkey$keyi';
   return client.query(view, query)
     .then((vr) {
-      return !vr.rows.isEmpty && vr.rows[0].key == 'viewkey$keyi';
+      return !vr.rows.isEmpty && vr.rows.first.key == 'viewkey$keyi';
     });
 }
 

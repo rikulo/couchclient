@@ -14,14 +14,14 @@ void testKeyStats(CouchClient client) {
   Future<Map<String, String>> f1 = client.keyStats('key100')
     .then((stats) {
       print("stats:$stats");
-      expect(stats.length, equals(7));
+      expect(stats.length, equals(5));
       expect(stats.containsKey('key_vb_state'), isTrue);
       expect(stats.containsKey('key_flags'), isTrue);
       expect(stats.containsKey('key_is_dirty'), isTrue);
       expect(stats.containsKey('key_cas'), isTrue);
-      expect(stats.containsKey('key_data_age'), isTrue);
+//      expect(stats.containsKey('key_data_age'), isTrue);
       expect(stats.containsKey('key_exptime'), isTrue);
-      expect(stats.containsKey('key_last_modification_time'), isTrue);
+//      expect(stats.containsKey('key_last_modification_time'), isTrue);
     });
   expect(f1, completes);
 }

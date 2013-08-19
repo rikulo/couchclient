@@ -41,7 +41,7 @@ void testCas(CouchClient client) {
   f1.then((v) {
     expect(decodeUtf8(v.data), equals('中文'));
     expect(v.cas, isNotNull);
-    expect(client.set('key0', encodeUtf8('val0'), v.cas), completion(isTrue));
+    expect(client.set('key0', encodeUtf8('val0'), cas:v.cas), completion(isTrue));
   });
   expect(f1, completes);
 }

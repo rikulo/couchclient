@@ -15,7 +15,7 @@ void testlistBucketNamesOP0(CouchClient client) {
   .then((names) {
     bool exist = false;
     for (var name in names) {
-      if (name == 'beer-sample') {
+      if (name == 'default') {
         exist = true;
       }
     }

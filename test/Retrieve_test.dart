@@ -109,32 +109,32 @@ final String BEER_VALUE =
 'drink after this may as well be water.","style":"Other Belgian-Style Ales",'
 '"category":"Belgian and French Ale"}';
 //get multiple key
-void testGetBearWithGetAll(CouchClient client) {
-  Stream s1 = client.getAll(["midnight_sun_brewing_co-wrath"]);
-  Future<List<GetResult>> f1 = s1.toList();
+//void testGetBearWithGetAll(CouchClient client) {
+//  Stream s1 = client.getAll(["midnight_sun_brewing_co-wrath"]);
+//  Future<List<GetResult>> f1 = s1.toList();
+//
+//  f1.then((List<GetResult> grs) {
+//    int j = 0;
+//    grs.forEach((GetResult gr) {
+//      expect(gr.key, equals("midnight_sun_brewing_co-wrath"));
+////      print('value:${decodeUtf8(gr.data)}');
+//      expect(decodeUtf8(gr.data), equals(BEER_VALUE));
+//      expect(gr.cas, isNull);
+//      ++j;
+//    });
+//  });
+//
+//  expect(f1, completes);
+//}
 
-  f1.then((List<GetResult> grs) {
-    int j = 0;
-    grs.forEach((GetResult gr) {
-      expect(gr.key, equals("midnight_sun_brewing_co-wrath"));
-//      print('value:${decodeUtf8(gr.data)}');
-      expect(decodeUtf8(gr.data), equals(BEER_VALUE));
-      expect(gr.cas, isNull);
-      ++j;
-    });
-  });
-
-  expect(f1, completes);
-}
-
-void testGetBeerWithGet(CouchClient client) {
-  Future f1 = client.get("midnight_sun_brewing_co-wrath");
-  f1.then((v) {
-    expect(decodeUtf8(v.data), equals(BEER_VALUE));
-    expect(v.cas, isNull);
-  });
-  expect(f1, completes);
-}
+//void testGetBeerWithGet(CouchClient client) {
+//  Future f1 = client.get("midnight_sun_brewing_co-wrath");
+//  f1.then((v) {
+//    expect(decodeUtf8(v.data), equals(BEER_VALUE));
+//    expect(v.cas, isNull);
+//  });
+//  expect(f1, completes);
+//}
 
 //get a key
 void testGetKey0(CouchClient client) {
@@ -161,8 +161,8 @@ void main() {
     test('TestGets2', () => testGets2(client));
     test('TestGetsAll', () => testGetsAll(client));
     test('TestGetKey0', () => testGetKey0(client));
-    test('TestGetBearWithGet', () => testGetBeerWithGet(client));
-    test('TestGetBearWithGetAll', () => testGetBearWithGetAll(client));
+//    test('TestGetBearWithGet', () => testGetBeerWithGet(client));
+//    test('TestGetBearWithGetAll', () => testGetBearWithGetAll(client));
   });
 
   print("ABC.hashCode: ${'ABC'.hashCode}");

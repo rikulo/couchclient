@@ -6,16 +6,16 @@ import 'package:couchclient/couchclient.dart';
 
 /**
  * This program assumes that Couchbase Server 2.0 is installed and the sample
- * data which is contained in beer-sample is created and ready for use.
+ * data which is contained in default is created and ready for use.
  *
  * see examples of Java client in http://www.couchbase.com/develop/java/current.
  */
 void main() {
   // Connect to server per the provided Uris
   // Here assume your Couchbase Server is installed on localhost
-  // Use "beer-sample" bucket with no password
+  // Use "default" bucket with no password
   CouchClient
-  .connect([Uri.parse("http://127.0.0.1:8091/pools")], "beer-sample", "")
+  .connect([Uri.parse("http://127.0.0.1:8091/pools")], "default", "")
   //when client is ready, query the database
   .then((client) => queryByView(client))
   // Catch all possible errors/exceptions

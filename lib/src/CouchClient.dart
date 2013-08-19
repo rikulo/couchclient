@@ -41,7 +41,7 @@ abstract class CouchClient implements MemcachedClient, Reconfigurable {
   /**
    * Unlock document associated with the specified key.
    */
-  Future<bool> unlock(String key, int cas);
+  Future<bool> unlock(String key, {int cas});
 
   /**
    * Create a DesignDoc and add into Couchbase; asynchronously return true
@@ -89,7 +89,7 @@ abstract class CouchClient implements MemcachedClient, Reconfigurable {
    *   specified and the document has been updated, ObserverStatus.MODIFIED
    *   would be returned in ObserveResult.status field.
    */
-  Future<Map<SocketAddress, ObserveResult>> observe(String key, [int cas]);
+  Future<Map<SocketAddress, ObserveResult>> observe(String key, {int cas});
 
   /**
    * Poll and observe a key with the given cas and persist settings.

@@ -4,11 +4,8 @@
 library couchbase_test_util;
 
 import 'dart:async';
-import 'dart:utf';
-import 'package:logging/logging.dart';
-import 'package:unittest/unittest.dart';
 import 'package:couchclient/couchclient.dart';
 
 Future<CouchClient> prepareCouchClient()
 => CouchClient.connect(
-    [Uri.parse("http://127.0.0.1:8091/pools")], 'beer-sample', '');
+    [Uri.parse("http://127.0.0.1:8091/pools")], 'default', '');

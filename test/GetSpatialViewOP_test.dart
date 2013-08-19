@@ -3,13 +3,19 @@
 // Author: henrichen
 
 import 'dart:async';
-import 'dart:utf';
 import 'package:unittest/unittest.dart';
 import 'package:couchclient/couchclient.dart';
 import 'CouchbaseTestUtil.dart' as cc;
 
 void testGetSpatialViewOP0(CouchClient client, String designDocName, String viewName) {
-  expect(client.getSpatialView(designDocName, viewName), completion(isNull));
+  ViewDesign view1 = new ViewDesign('xyzview', 'function(doc, meta) {emit([doc.brewery_id]);}');
+  Future f = client.addDesignDoc(new DesignDoc(designDocName, views:[view1]))
+  .then((ok) {
+    expect(ok, true);
+    return client.getSpatialView(designDocName, viewName);
+  });
+
+  expect(f, completion(isNull));
 }
 
 String REST_USER = 'Administrator';
