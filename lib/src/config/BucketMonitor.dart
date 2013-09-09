@@ -81,7 +81,7 @@ class BucketMonitor extends Observable {
             handler.setBucketMonitor(this);
           }
           //when receive a full pack of information, will check bucketToMonitor
-          handler.messageReceived(decodeUtf8(bytes));
+          handler.messageReceived(UTF8.decode(bytes));
         },
         onDone : () {
           if (!_shutdown) {
@@ -190,7 +190,7 @@ class BucketMonitor extends Observable {
     String response = handler.lastResponse;
     _logger.finest("lastResponse:$response");
     if (response != null) {
-      Bucket updatedBucket = this.configParser.parseBucket(json.parse(response));
+      Bucket updatedBucket = this.configParser.parseBucket(JSON.decode(response));
       setBucket(updatedBucket);
     }
   }

@@ -3,7 +3,7 @@
 // Author: henrichen
 
 import 'dart:async';
-import 'dart:utf';
+import 'dart:convert' show UTF8;
 import 'package:unittest/unittest.dart';
 import 'package:memcached_client/memcached_client.dart';
 import 'package:couchclient/couchclient.dart';
@@ -11,7 +11,7 @@ import 'CouchbaseTestUtil.dart' as cc;
 
 //persist
 void testObserve1(CouchClient client) {
-  Future f = client.set('key0', encodeUtf8('"value0"'))
+  Future f = client.set('key0', UTF8.encode('"value0"'))
   .then((ok) {
     if (ok) {
       return new Future.delayed(new Duration(seconds:1), () => ok);
@@ -30,7 +30,7 @@ void testObserve1(CouchClient client) {
 
 //not persisted
 void testObserve2(CouchClient client) {
-  Future f = client.set('key0', encodeUtf8('"value0"'))
+  Future f = client.set('key0', UTF8.encode('"value0"'))
     .then((_) => client.gets('key0'))
     .then((GetResult rv) => client.observe('key0'))
     .then((Map<SocketAddress, ObserveResult> rv) {
@@ -53,7 +53,7 @@ void testObserve4(CouchClient client) {
   int cas;
   Future f = client.gets('key0')
     .then((GetResult rv) => cas = rv.cas)
-    .then((_) => client.set('key0', encodeUtf8('"value0"')))
+    .then((_) => client.set('key0', UTF8.encode('"value0"')))
     .then((_) => client.observe('key0'))
     .then((Map<SocketAddress, ObserveResult> rv) {
       expect(rv.values.first.status, equals(ObserveStatus.NOT_PERSISTED));
@@ -72,7 +72,7 @@ void testObserve5(CouchClient client) {
     .then((Map<SocketAddress, ObserveResult> rv) {
       expect(rv.values.first.status, equals(ObserveStatus.LOGICALLY_DELETED));
     })
-    .then((_) => client.set('key0', encodeUtf8('"value0"')));
+    .then((_) => client.set('key0', UTF8.encode('"value0"')));
   expect(f, completes);
 }
 

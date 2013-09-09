@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'dart:utf';
+import 'dart:convert' show UTF8;
 import 'dart:json' as json;
 import 'package:memcached_client/memcached_client.dart';
 import 'package:couchclient/couchclient.dart';
@@ -63,7 +63,7 @@ Future queryByView(CouchClient client) {
   .then((results) {
     for (ViewRow row in results.rows) {
       // Convert List<int> to String
-      String data = decodeUtf8(row.doc.data);
+      String data = UTF8.decode(row.doc.data);
       // Print out some infos about the document
       print("The Key is: ${row.key}");
       print("The full document is : ${data}");

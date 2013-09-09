@@ -3,17 +3,17 @@
 // Author: henrichen
 
 import 'dart:async';
-import 'dart:utf';
+import 'dart:convert' show UTF8;
 import 'package:unittest/unittest.dart';
 import 'package:memcached_client/memcached_client.dart';
 import 'package:couchclient/couchclient.dart';
 import 'CouchbaseTestUtil.dart' as cc;
 
 void testTouch(CouchClient client) {
-  expect(client.set('key100', encodeUtf8('val100')), completion(isTrue));
+  expect(client.set('key100', UTF8.encode('val100')), completion(isTrue));
   Future f1 = client.get('key100')
     .then((val) {
-      expect(val.data, equals(encodeUtf8('val100')));
+      expect(val.data, equals(UTF8.encode('val100')));
       print("wait 1 second ...");
       return client.touch('key100', 1); //expire in 1 seconds
     }).then((b) {

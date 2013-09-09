@@ -2,14 +2,11 @@ library couchclient;
 
 import "dart:async";
 import 'dart:io';
-import 'dart:utf';
 import 'dart:collection';
-import 'dart:typed_data';
-import 'dart:json' as json;
 import 'dart:math' as math;
+import 'dart:convert' show UTF8, JSON;
 import "package:meta/meta.dart";
 import 'package:logging/logging.dart';
-import 'package:crypto/crypto.dart';
 import 'package:memcached_client/memcached_client.dart';
 
 part 'src/CouchClient.dart';

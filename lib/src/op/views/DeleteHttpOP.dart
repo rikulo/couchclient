@@ -16,7 +16,7 @@ abstract class DeleteHttpOP extends HttpOP {
     //Don't know the reason. We work around this by check status code!
 //    return rf.then((r) {
 //      hc.close();
-//      return decodeUtf8(r.contents);
+//      return UTF8.decode(r.contents);
 //    });
     rf.then((result) {
       String path = cmd.path;
@@ -25,11 +25,11 @@ abstract class DeleteHttpOP extends HttpOP {
       if (result.status == 200) {
         cmpl.complete(
             new HttpResult(result.status,
-                result.headers, encodeUtf8('{"ok":true,"id":"_design/$docName"}')));
+                result.headers, UTF8.encode('{"ok":true,"id":"_design/$docName"}')));
       } else {
         cmpl.complete(
             new HttpResult(result.status,
-                result.headers, encodeUtf8('{"ok":false,"id":"_design/$docName"}')));
+                result.headers, UTF8.encode('{"ok":false,"id":"_design/$docName"}')));
       }
     });
     return cmpl.future;

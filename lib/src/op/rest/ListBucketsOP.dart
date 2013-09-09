@@ -21,10 +21,10 @@ class ListBucketsOP extends GetHttpOP {
   }
 
   void processResponse(HttpResult result) {
-    String base = decodeUtf8(result.contents);
+    String base = UTF8.decode(result.contents);
     List<String> names = new List();
     if (base != null && base.trim() != '') {
-      List jo = json.parse(base);
+      List jo = JSON.decode(base);
       for (Map<String, String> bucketjo in jo) {
         final name = bucketjo['name'];
         if (name != null)

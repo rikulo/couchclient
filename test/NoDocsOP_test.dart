@@ -3,7 +3,7 @@
 // Author: henrichen
 
 import 'dart:async';
-import 'dart:utf';
+import 'dart:convert' show UTF8;
 import 'package:unittest/unittest.dart';
 import 'package:couchclient/couchclient.dart';
 import 'CouchbaseTestUtil.dart' as cc;
@@ -37,7 +37,7 @@ void testNoDocsOP0(CouchClient client) {
     expect(view.hasReduce, isFalse);
     List<Future> fs = new List();
     for (int j = 0; j < 10; ++j)
-      fs.add(client.set("beer$j", encodeUtf8('{"name": "beer$j", "type": "beerX"}'))
+      fs.add(client.set("beer$j", UTF8.encode('{"name": "beer$j", "type": "beerX"}'))
           .then((_) => client.observePoll("beer$j", persistTo: PersistTo.ONE)));
     return Future.wait(fs)
     .then((_) {

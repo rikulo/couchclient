@@ -3,7 +3,7 @@
 // Author: henrichen
 
 import 'dart:async';
-import 'dart:utf';
+import 'dart:convert' show UTF8;
 import 'package:unittest/unittest.dart';
 import 'package:memcached_client/memcached_client.dart';
 import 'package:couchclient/couchclient.dart';
@@ -11,11 +11,11 @@ import 'CouchbaseTestUtil.dart' as cc;
 
 //get a key
 void testGet1(CouchClient client) {
-  expect(client.set('key0', encodeUtf8('"val0"')), completion(isTrue));
+  expect(client.set('key0', UTF8.encode('"val0"')), completion(isTrue));
 
   Future f1 = client.get('key0');
   f1.then((v) {
-    expect(decodeUtf8(v.data), equals('"val0"'));
+    expect(UTF8.decode(v.data), equals('"val0"'));
     expect(v.cas, isNull);
   });
   expect(f1, completes);
@@ -30,7 +30,7 @@ void testGet2(CouchClient client) {
 void testGetAll(CouchClient client) {
   int count = 1;
   for (int j = 0; j < count; ++j) {
-    expect(client.set('key$j', encodeUtf8('val$j')), completion(isTrue));
+    expect(client.set('key$j', UTF8.encode('val$j')), completion(isTrue));
   }
 
   List<String> keys = new List();
@@ -45,7 +45,7 @@ void testGetAll(CouchClient client) {
     int j = 0;
     grs.forEach((GetResult gr) {
       expect(gr.key, equals('key$j'));
-      expect(decodeUtf8(gr.data), equals('val$j'));
+      expect(UTF8.decode(gr.data), equals('val$j'));
       expect(gr.cas, isNull);
       ++j;
     });
@@ -56,11 +56,11 @@ void testGetAll(CouchClient client) {
 
 //gets a key; sould return with cas token.
 void testGets1(CouchClient client) {
-  expect(client.set('key0', encodeUtf8('val0')), completion(isTrue));
+  expect(client.set('key0', UTF8.encode('val0')), completion(isTrue));
 
   Future f1 = client.gets('key0');
   f1.then((v) {
-    expect(decodeUtf8(v.data), equals('val0'));
+    expect(UTF8.decode(v.data), equals('val0'));
     expect(v.cas, isNotNull);
   });
   expect(f1, completes);
@@ -75,7 +75,7 @@ void testGets2(CouchClient client) {
 void testGetsAll(CouchClient client) {
   int count = 20;
   for (int j = 0; j < count; ++j) {
-    expect(client.set('key$j', encodeUtf8('val$j')), completion(isTrue));
+    expect(client.set('key$j', UTF8.encode('val$j')), completion(isTrue));
   }
 
   List<String> keys = new List();
@@ -90,7 +90,7 @@ void testGetsAll(CouchClient client) {
     int j = 0;
     grs.forEach((GetResult gr) {
       expect(gr.key, equals('key$j'));
-      expect(decodeUtf8(gr.data), equals('val$j'));
+      expect(UTF8.decode(gr.data), equals('val$j'));
       expect(gr.cas, isNotNull);
       ++j;
     });
@@ -117,8 +117,8 @@ final String BEER_VALUE =
 //    int j = 0;
 //    grs.forEach((GetResult gr) {
 //      expect(gr.key, equals("midnight_sun_brewing_co-wrath"));
-////      print('value:${decodeUtf8(gr.data)}');
-//      expect(decodeUtf8(gr.data), equals(BEER_VALUE));
+////      print('value:${UTF8.decode(gr.data)}');
+//      expect(UTF8.decode(gr.data), equals(BEER_VALUE));
 //      expect(gr.cas, isNull);
 //      ++j;
 //    });
@@ -130,7 +130,7 @@ final String BEER_VALUE =
 //void testGetBeerWithGet(CouchClient client) {
 //  Future f1 = client.get("midnight_sun_brewing_co-wrath");
 //  f1.then((v) {
-//    expect(decodeUtf8(v.data), equals(BEER_VALUE));
+//    expect(UTF8.decode(v.data), equals(BEER_VALUE));
 //    expect(v.cas, isNull);
 //  });
 //  expect(f1, completes);
@@ -140,7 +140,7 @@ final String BEER_VALUE =
 void testGetKey0(CouchClient client) {
   Future f1 = client.get('key0');
   f1.then((v) {
-    expect(decodeUtf8(v.data), equals('val0'));
+    expect(UTF8.decode(v.data), equals('val0'));
     expect(v.cas, isNull);
   });
   expect(f1, completes);

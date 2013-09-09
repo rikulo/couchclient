@@ -3,7 +3,7 @@
 // Author: henrichen
 
 import 'dart:async';
-import 'dart:utf';
+import 'dart:convert' show UTF8;
 import 'package:unittest/unittest.dart';
 import 'package:memcached_client/memcached_client.dart';
 import 'package:couchclient/couchclient.dart';
@@ -11,7 +11,7 @@ import 'CouchbaseTestUtil.dart' as cc;
 
 //persist
 void testObservePoll1(CouchClient client) {
-  Future f = client.set('key0', encodeUtf8('"value0"'))
+  Future f = client.set('key0', UTF8.encode('"value0"'))
   .then((ok) {
 
     if (ok) {
@@ -53,7 +53,7 @@ void testObservePoll3(CouchClient client) {
 //modified (because cas is different)
 void testObservePoll4(CouchClient client) {
 
-  Future f = client.set('key0', encodeUtf8('"value0"'))
+  Future f = client.set('key0', UTF8.encode('"value0"'))
   .then((ok) {
     if (ok) {
       expect(client.observePoll('key0', cas: 0, persistTo: PersistTo.ONE),

@@ -19,8 +19,8 @@ abstract class DocsOP extends GetHttpOP {
   }
 
   /**
-   * If a String, then return itself; otherwise, json.stringify it.
+   * If a String, then return itself; otherwise, JSON.encode it.
    */
   String _makeString(dynamic val)
-  => val is String ? val : json.stringify(val);
+  => val is String ? val : JSON.encode(val);
 }

@@ -6,7 +6,7 @@ part of couchclient;
 
 class ConfigFactory {
   Config parse(String data) {
-    Map jo = json.parse(data);
+    Map jo = JSON.decode(data);
   }
 
   Config parseJson(Map jo) =>

@@ -9,9 +9,9 @@ class ReducedOP extends DocsOP {
       : super(view, query, msecs);
 
   void processResponse(HttpResult result) {
-    String base = decodeUtf8(result.contents);
+    String base = UTF8.decode(result.contents);
     _logger.finest("ReducedOP:base->[$base]");
-    Map jo = json.parse(base);
+    Map jo = JSON.decode(base);
     List<ViewRow> viewRows = new List();
     List<ViewRowError> errors = new List();
     if (jo.containsKey('rows')) {

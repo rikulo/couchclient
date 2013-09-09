@@ -19,8 +19,8 @@ class GetDesignDocOP extends GetHttpOP {
   }
 
   void processResponse(HttpResult result) {
-    String base = decodeUtf8(result.contents);
-    Map jo = json.parse(base);
+    String base = UTF8.decode(result.contents);
+    Map jo = JSON.decode(base);
     if (jo.containsKey('error')) {
       _cmpl.complete(null);
     } else {

@@ -66,6 +66,6 @@ class DesignDoc {
       }
     }
 
-    return json.stringify(jo);
+    return JSON.encode(jo);
   }
 }

@@ -18,7 +18,7 @@ class ConfigParserJson {
   //TODO: catch error
   Map<String, Pool> parseBase(String base) {
     Map<String, Pool> parsedBase = new HashMap();
-    Map baseJO = json.parse(base);
+    Map baseJO = JSON.decode(base);
     List<Map> poolsJA = baseJO['pools'];
     for (Map poolJO in poolsJA) {
       String name = poolJO[NAME_ATTR];
@@ -36,7 +36,7 @@ class ConfigParserJson {
 
   //TODO: catch error
   void loadPool(Pool pool, String spool) {
-    Map poolJO = json.parse(spool);
+    Map poolJO = JSON.decode(spool);
     Map poolBucketsJO = poolJO['buckets'];
     Uri bucketsUri = Uri.parse(poolBucketsJO['uri']);
     pool.bucketsUri = bucketsUri;
@@ -45,7 +45,7 @@ class ConfigParserJson {
   //TODO: catch error
   Map<String, Bucket> parseBuckets(String buckets) {
     Map<String, Bucket> bucketsMap = new HashMap();
-    List bucketsJA = json.parse(buckets);
+    List bucketsJA = JSON.decode(buckets);
     for (Map bucketJO in bucketsJA) {
       Bucket bucket = parseBucket(bucketJO);
       bucketsMap[bucket.name] = bucket;

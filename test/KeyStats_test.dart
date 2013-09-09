@@ -3,14 +3,14 @@
 // Author: henrichen
 
 import 'dart:async';
-import 'dart:utf';
+import 'dart:convert' show UTF8;
 import 'package:unittest/unittest.dart';
 import 'package:memcached_client/memcached_client.dart';
 import 'package:couchclient/couchclient.dart';
 import 'CouchbaseTestUtil.dart' as cc;
 
 void testKeyStats(CouchClient client) {
-  expect(client.set('key100', encodeUtf8('val100')), completion(isTrue));
+  expect(client.set('key100', UTF8.encode('val100')), completion(isTrue));
   Future<Map<String, String>> f1 = client.keyStats('key100')
     .then((stats) {
       print("stats:$stats");

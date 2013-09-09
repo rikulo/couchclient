@@ -3,7 +3,7 @@
 // Author: henrichen
 
 import 'dart:async';
-import 'dart:utf';
+import 'dart:convert' show UTF8;
 import 'package:logging/logging.dart';
 import 'package:unittest/unittest.dart';
 import 'package:memcached_client/memcached_client.dart';
@@ -12,7 +12,7 @@ import 'CouchbaseTestUtil.dart' as cc;
 
 //delete key3
 void testDelete1(CouchClient client) {
-  expect(client.set('key3', encodeUtf8('va13')), completion(isTrue));
+  expect(client.set('key3', UTF8.encode('va13')), completion(isTrue));
   expect(client.delete('key3'), completion(isTrue));
 }
 

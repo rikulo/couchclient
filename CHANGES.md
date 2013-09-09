@@ -1,5 +1,9 @@
 #Rikulo Couchbase Client
 
+* September 09, 2013
+  * Release version 0.4.0+1
+  * Make compatiable with Dart SDK version 0.7.1_r27025
+
 * August 19, 2013
   * Release version 0.4.0
   * fine tune APIs

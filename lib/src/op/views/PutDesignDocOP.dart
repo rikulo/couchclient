@@ -19,9 +19,9 @@ class PutDesignDocOP extends PutHttpOP {
   }
 
   void processResponse(HttpResult result) {
-    String base = decodeUtf8(result.contents);
+    String base = UTF8.decode(result.contents);
     _logger.finest("PutDesignDocOP: base->[$base]");
-    Map jo = json.parse(base);
+    Map jo = JSON.decode(base);
     bool ok = jo['ok'];
     _cmpl.complete(ok != null && ok);
   }

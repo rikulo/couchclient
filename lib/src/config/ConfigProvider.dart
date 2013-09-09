@@ -146,7 +146,7 @@ class ConfigProvider {
     Uri baseUri = baseList[idx];
     return _readUri(null, baseUri, restUsr, restPwd)
     .then((HttpResult result) {
-      String base = decodeUtf8(result.contents);
+      String base = UTF8.decode(result.contents);
       if (base.trim().isEmpty) {
         return _readPools0(bucketname, idx+1); //check next Pool
       }
@@ -160,7 +160,7 @@ class ConfigProvider {
       for (Pool pool in poolMap.values) {
         Future<Pool> fpool = _readUri(baseUri, pool.uri, restUsr, restPwd)
         .then((HttpResult result) {
-          String poolstr = decodeUtf8(result.contents);
+          String poolstr = UTF8.decode(result.contents);
           _logger.finest("pool->$poolstr");
           configParser.loadPool(pool, poolstr);
           return pool;
@@ -177,7 +177,7 @@ class ConfigProvider {
           _logger.finest("pool.bucketsUri->${pool.bucketsUri}");
           Future<Pool> fpool = _readUri(baseUri, pool.bucketsUri, restUsr, restPwd)
           .then((HttpResult result) {
-            String bucketsStr = decodeUtf8(result.contents);
+            String bucketsStr = UTF8.decode(result.contents);
             Map<String, Bucket> bucketsForPool =
                 configParser.parseBuckets(bucketsStr);
             pool.replaceBuckets(bucketsForPool);

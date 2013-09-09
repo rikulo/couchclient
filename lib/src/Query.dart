@@ -104,7 +104,7 @@ class Query {
    * Sets query to return documents that match each of keys specified.
    */
   void set keys(List<String> keys) {
-    _args[KEYS] = json.stringify(keys);
+    _args[KEYS] = JSON.encode(keys);
   }
 
   /**
