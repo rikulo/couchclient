@@ -1,8 +1,7 @@
 import 'dart:async';
 import 'dart:io';
-import 'dart:utf';
+import 'dart:convert' show UTF8;
 import '../../packages/unittest/unittest.dart';
-import '../../packages/couchclient/couchclient.dart';
 
 Future<String> testDelete() {
   HttpClient hc = new HttpClient();
@@ -21,7 +20,7 @@ Future<String> testDelete() {
     print('status:$status');
     print("resp.headers: ${resp.headers}");
     print("conninfo: ${resp.connectionInfo.remoteHost}");
-    resp.first.then((bytes) => print("first: ${decodeUtf8(bytes)}"));
+    resp.first.then((bytes) => print("first: ${UTF8.decode(bytes)}"));
     StringBuffer sb = new StringBuffer();
 //    resp.listen((bytes) => sb.write(decodeUtf8(bytes)),
 //      onError : (err) => print("onError:$err"),

@@ -316,7 +316,7 @@ class CouchClientImpl extends MemcachedClientImpl implements CouchClient {
             results[data.key] = data;
             _logger.finest("data:${data.key}");
           },
-          onError: (err) => print(err),
+          onError: (err) => _logger.warning(err),
           onDone: () {
             List<ViewRowWithDocs> docs = new List();
             for (ViewRowNoDocs r in vr.rows) {

@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'dart:utf';
+import 'dart:convert' show UTF8;
 import '../../packages/unittest/unittest.dart';
 import '../../packages/couchclient/couchclient.dart';
 
@@ -11,7 +11,7 @@ Future process(CouchClient client) {
 }
 
 Future<bool> setDoc(CouchClient client) {
-  return client.set('viewkey$keyi', encodeUtf8('"viewval$keyi"'));
+  return client.set('viewkey$keyi', UTF8.encode('"viewval$keyi"'));
 }
 
 Future<bool> delDoc(CouchClient client) {

@@ -2,7 +2,7 @@ import '../../packages/memcached_client/memcached_client.dart';
 import '../../packages/logging/logging.dart';
 import 'dart:async';
 import 'dart:io';
-import 'dart:utf';
+import 'dart:convert' show UTF8;
 
 class Connect {
   Logger _logger;
@@ -34,7 +34,7 @@ class Connect {
     ++seq;
     _ctrl.add("$seq - value1");
     _ctrl.add("$seq - value2");
-    if (decodeUtf8(_pbuf).endsWith("END\r\n")) {
+    if (UTF8.decode(_pbuf).endsWith("END\r\n")) {
       print("Close StreamController!");
       _ctrl.close();
     }

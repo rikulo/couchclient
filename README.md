@@ -40,7 +40,7 @@ Using CouchClient is straightforward. Connect to the server and
 use the client's APIs to access the database.
 
     import "dart:uri";
-    import "dart:utf";
+    import "dart:convert";
     import "dart:async";
     import "package:couchclient/couchclient.dart";
     
@@ -69,13 +69,13 @@ use the client's APIs to access the database.
     
     Future access(CouchClient client) {
       // Do a set
-      return client.set(DOC_ID, encodeUtf8(VALUE))
+      return client.set(DOC_ID, UTF8.encode(VALUE))
       // Check if set succeeded and show message
       .then((ok) => print(ok ? "Set Succeeded" : "Set failed"))
       // Then get the value back by document id
       .then((_) => client.get(DOC_ID))
       // Check if get data equals to set one
-      .then((val) => decodeUtf8(val.data) == VALUE)
+      .then((val) => UTF8.decode(val.data) == VALUE)
       // Show message
       .then((ok) => print(ok ? "Get Succeeded" : "Get failed"))
       // Close the client

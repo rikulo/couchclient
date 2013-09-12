@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'dart:utf';
+import 'dart:convert' show UTF8;
 import '../../packages/unittest/unittest.dart';
 import '../../packages/couchclient/couchclient.dart';
 
@@ -14,7 +14,7 @@ Future process(CouchClient client) {
 Future<List> setDocs(CouchClient client) {
   List<Future> sfs = new List();
   for (int j = 0; j < count; ++j)
-    sfs.add(client.set('viewkey$j', encodeUtf8('"viewval$j"')));
+    sfs.add(client.set('viewkey$j', UTF8.encode('"viewval$j"')));
   return Future.wait(sfs);
 }
 
