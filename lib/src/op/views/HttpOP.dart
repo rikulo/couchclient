@@ -67,5 +67,8 @@ abstract class HttpOP {
   void complete() {
     _state = OPState.COMPLETE;
   }
+  
+  @override
+  String toString() => "${this.runtimeType}($seq)";
 }
 
