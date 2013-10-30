@@ -1,6 +1,5 @@
 import 'dart:async';
-import 'dart:convert' show UTF8;
-import 'dart:json' as json;
+import 'dart:convert' show UTF8, JSON;
 import 'package:memcached_client/memcached_client.dart';
 import 'package:couchclient/couchclient.dart';
 
@@ -69,7 +68,7 @@ Future queryByView(CouchClient client) {
       print("The full document is : ${data}");
 
       // Convert it back to an object with json
-      Map bm = json.parse(data);
+      Map bm = JSON.decode(data);
       Beer beer = new Beer.fromMap(bm);
 
       print("Hi, my name is ${beer.name}!");

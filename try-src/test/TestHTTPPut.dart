@@ -24,7 +24,7 @@ Future<String> testDelete() {
         h.set(HttpHeaders.USER_AGENT, "Couchbase Dart Client");
         h.set("X-memcachekv-Store-Client-Specification-Version", "1.0");
         h.set("Connection", "Keep-Alive");
-        req.addString(docstr);
+        req.write(docstr);
         print("close request");
         return req.close();
       }, onError: (err) => print("in-place-reqf:$err"));
