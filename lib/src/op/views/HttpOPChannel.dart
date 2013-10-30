@@ -12,6 +12,7 @@ class HttpOPChannel implements OPChannel<int, HttpOP> {
   final OPQueue<int, HttpOP> _writeQ;
   final AuthDescriptor _authDescriptor;
   final Uri _baseUri;
+  int _seq = 0; //OP sequence id
 
   bool _closing = false; //Channel is closing
   HttpOP _writeOP; //current OP to be write into socket
@@ -54,6 +55,8 @@ class HttpOPChannel implements OPChannel<int, HttpOP> {
     }
 
     op.nextState();
+    op.seq = _seq++;
+    _seq &= 0xffffffff;
     writeQ.add(op);
     if (writeQ.length == 1) { // 0 -> 1, new a Future for OP processing
       _processLoop();
