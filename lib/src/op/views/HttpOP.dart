@@ -69,6 +69,6 @@ abstract class HttpOP {
   }
   
   @override
-  String toString() => "${this.runtimeType}($seq)";
+  String toString() => "${this.runtimeType}@$seq";
 }
 
