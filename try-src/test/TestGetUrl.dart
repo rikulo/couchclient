@@ -1,6 +1,6 @@
-    import '../../../../../../../D:/Program/dart/dart-sdk/lib/io/io.dart';
-    import '../../../../../../../D:/Program/dart/dart-sdk/lib/async/async.dart';
-    import '../../../../../../../D:/Program/dart/dart-sdk/lib/convert/convert.dart';
+    import 'dart:io';
+    import 'dart:async';
+    import 'dart:convert';
 
     void main() {
       HttpClient hc = new HttpClient();

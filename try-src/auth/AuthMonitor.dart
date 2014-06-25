@@ -17,7 +17,7 @@ class AuthMonitor {
     interruptOldAuth(node);
     Future<bool> newSaslAuthenticator =
         authSasl(conn, opFact, authDescriptor, node);
-    nodeMap[node, newSaslAuthenticator]
+//    nodeMap[node, newSaslAuthenticator]
   }
 }
 
