@@ -17,7 +17,7 @@ class VbucketNodeLocator implements NodeLocator {
     _fullConfig = new _TotalConfig(joinConfig, nodesMap);
   }
 
-  //@Override
+  @override
   MemcachedNode getPrimary(String key) {
     Config config = _fullConfig.config;
     Map<String, MemcachedNode> nodesMap = _fullConfig.nodesMap;
@@ -50,13 +50,13 @@ class VbucketNodeLocator implements NodeLocator {
     return pNode;
   }
 
-  //@Override
+  @override
   Iterator<MemcachedNode> getSequence(String key) => new _VbucketNodeIterator();
 
-  //@Override
+  @override
   Iterable<MemcachedNode> get allNodes => _fullConfig.nodesMap.values;
 
-  //@Override
+  @override
   void updateLocator(List<MemcachedNode> nodes) {
     throw new UnsupportedError("Must be updated with a config");
   }
@@ -135,10 +135,10 @@ class VbucketNodeLocator implements NodeLocator {
 }
 
 class _VbucketNodeIterator implements Iterator<MemcachedNode> {
-  //@Override
+  @override
   MemcachedNode get current => null;
 
-  //@Override
+  @override
   bool moveNext() => false;
 }
 

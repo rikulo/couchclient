@@ -24,30 +24,30 @@ class HttpOPChannel implements OPChannel<int, HttpOP> {
     _logger = initLogger("couchclient.op.view", this);
   }
 
-  //@Override
+  @override
   OPQueue<int, HttpOP> get writeQ
   => _writeQ;
 
-  //@Override
+  @override
   OPQueue<int, HttpOP> get readQ {
     throw new StateError("Should never call readQ in Http protocol");
   }
 
-  //@Override
+  @override
   bool get isConnected
   => true;
 
-  //@Override
+  @override
   bool get isAuthenticated
   => true;
 
-  //@Override
+  @override
   void authenticate() {
     //Should never call here
     throw new StateError("Should never call authenticate in Http protocol");
   }
 
-  //@Override
+  @override
   void addOP(HttpOP op) {
     if (_closing) {
       //_logger.finest("The client is being closing; no way to addOP.");

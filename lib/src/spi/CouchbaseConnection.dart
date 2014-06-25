@@ -94,7 +94,7 @@ implements Reconfigurable {
    * + [key] - the key the operation is operating upon
    * + [o] - the operation
    */
-  //@Override
+  @override
   MemcachedNode locateNode(String key, OP o) {
     MemcachedNode placeIn = null;
     MemcachedNode primary = locator.getPrimary(key);
@@ -126,7 +126,7 @@ implements Reconfigurable {
     return placeIn;
   }
 
-  //@Override
+  @override
   void addSingleKeyOPToNode(String key, MemcachedNode placeIn, OP o) {
     assert(o.isCancelled || placeIn != null);
     if (placeIn != null) {
@@ -158,7 +158,7 @@ implements Reconfigurable {
     }
   }
 
-  //@Override
+  @override
   void addMultiKeyOPToNode(List<String> keys, MemcachedNode node, OP op) {
     if (locator is VbucketNodeLocator && op is VbucketAwareOP) {
       final VbucketNodeLocator vlocator = locator;

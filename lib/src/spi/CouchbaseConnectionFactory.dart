@@ -69,7 +69,7 @@ class CouchbaseConnectionFactory extends BinaryConnectionFactory {
     configProvider = new ConfigProvider(baseList, bucketName, _password);
   }
 
-  //@Override
+  @override
   Future<MemcachedConnection> createConnection(List<SocketAddress> saddrs) {
     return new Future.sync(() {
       List<MemcachedNode> nodes = createNodes(saddrs);
@@ -87,7 +87,7 @@ class CouchbaseConnectionFactory extends BinaryConnectionFactory {
     });
   }
 
-  //@Override
+  @override
   Future<NodeLocator> createLocator(List<MemcachedNode> nodes) {
     return vbucketConfig.then((config) {
       if (config == null)
@@ -102,10 +102,10 @@ class CouchbaseConnectionFactory extends BinaryConnectionFactory {
     });
   }
 
-  //@Override
+  @override
   FailureMode get failureMode => FailureMode.Retry;
 
-  //@Override
+  @override
   AuthDescriptor get authDescriptor {
     if (configProvider.anonymousAuthBucket != bucketName && bucketName != null) {
       if (_authDescriptor == null) {

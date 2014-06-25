@@ -323,7 +323,7 @@ class Query {
   /**
    * Returns the Query object as a string, suitable for the HTTP queries.
    */
-  //@Override
+  @override
   String toString() {
     bool first = true;
     StringBuffer result = new StringBuffer();
