@@ -23,8 +23,8 @@ class Bucket {
 
   void setIsNotUpdating() {
     isNotUpdating = true;
-    _logger.finest("Marking bucket as not updating,"
-        " disconnected from config stream");
+    //_logger.finest("Marking bucket as not updating,"
+    //    " disconnected from config stream");
   }
 
   String toString() => "$name: $config, $nodes";

@@ -73,7 +73,7 @@ class BucketMonitor extends Observable {
       return req.close();
     })
     .then((HttpClientResponse resp) {
-      _logger.finest("Start bucket monitor host:$host, uri:$cometStreamUri");
+      //_logger.finest("Start bucket monitor host:$host, uri:$cometStreamUri");
       resp.listen(
         (bytes) {
           if (handler == null) { //handle response
@@ -94,27 +94,27 @@ class BucketMonitor extends Observable {
             }
           }
         },
-        onError: (err) { //fail to read response
-          _handleException(err);
-          _logger.finest("_cometConnect(): onError event in reading HttpResponse: $err");
+        onError: (err, st) { //fail to read response
+          _handleException(err, st);
+          //_logger.finest("_cometConnect(): onError event in reading HttpResponse: $err");
         }
       );
       return true;
     })
     .catchError(
-      (err) {
-        _handleException(err);
-        _logger.finest("_cometConnect(): exception in reading HttpResponse: $err");
+      (err, st) {
+        _handleException(err, st);
+        //_logger.finest("_cometConnect(): exception in reading HttpResponse: $err");
         return false;
       }
     );
   }
 
-  void _handleException(err) {
+  void _handleException(err, st) {
     if (!_shutdown) {
       notifyDisconnected();
       if (handler != null)
-        handler.exceptionCaught(err);
+        handler.exceptionCaught(err, st);
       if (channel != null) {
         channel.close();
         channel = null;
@@ -161,8 +161,8 @@ class BucketMonitor extends Observable {
    * @param bucketToMonitor the bucketToMonitor to set
    */
   void setBucket(Bucket newBucket) {
-    _logger.finest("setBucket: bucket:${this.bucket.hashCode}, "
-      "newBucket:${newBucket.hashCode}, equals:${bucket == newBucket}");
+    //_logger.finest("setBucket: bucket:${this.bucket.hashCode}, "
+    //  "newBucket:${newBucket.hashCode}, equals:${bucket == newBucket}");
     if (this.bucket == null || this.bucket != newBucket) {
       this.bucket = newBucket;
       setChanged();
@@ -179,7 +179,7 @@ class BucketMonitor extends Observable {
       _shutdown = true;
       channel.close(force:true); //force shutdown
       channel = null;
-      _logger.finest("shutdown monitor at $cometStreamUri");
+      //_logger.finest("shutdown monitor at $cometStreamUri");
     }
   }
 
@@ -188,7 +188,7 @@ class BucketMonitor extends Observable {
    */
   void replaceConfig() {
     String response = handler.lastResponse;
-    _logger.finest("lastResponse:$response");
+    //_logger.finest("lastResponse:$response");
     if (response != null) {
       Bucket updatedBucket = this.configParser.parseBucket(JSON.decode(response));
       setBucket(updatedBucket);

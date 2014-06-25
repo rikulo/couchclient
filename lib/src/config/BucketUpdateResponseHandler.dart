@@ -18,7 +18,7 @@ class BucketUpdateResponseHandler {
   }
 
   void messageReceived(String curChunk) {
-    _logger.finest("curChunk:$curChunk");
+    //_logger.finest("curChunk:$curChunk");
     if (this._partialResponse == null) {
       this._partialResponse = new StringBuffer();
     }
@@ -51,14 +51,14 @@ class BucketUpdateResponseHandler {
    * better solution to the problem than just shutting down the connection. For
    * now just invalidate the BucketMonitor, and we will recreate the connection.
    */
-  void exceptionCaught(Object err) {
-    _logger.warning("Exception occurred: $err");
+  void exceptionCaught(error, [stackTrace]) {
+    _logger.warning("Exception occurred", error, stackTrace);
     if (_monitor != null)
       _monitor.replaceConfig();
   }
 
   //TODO: the monitor has been disconnected; might need to do something?
   void disconnect() {
-    _logger.finest("disconnect!");
+    //_logger.finest("disconnect!");
   }
 }

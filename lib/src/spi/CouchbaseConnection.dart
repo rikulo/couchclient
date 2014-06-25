@@ -34,7 +34,7 @@ implements Reconfigurable {
       final newSaddrs =
           new HashSet<SocketAddress>.from(
               HttpUtil.parseSocketAddressesFromStrings(bucket.config.servers));
-      _logger.finest("newSaddrs:$newSaddrs");
+      //_logger.finest("newSaddrs:$newSaddrs");
       // split current nodes to "shutdown" nodes and "stay" nodes
       List<MemcachedNode> oddNodes = new List();
       List<MemcachedNode> stayNodes = new List();

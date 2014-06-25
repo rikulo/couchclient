@@ -7,7 +7,7 @@ class MyClass {
   }
 
   test1() {
-    _logger.finest('log MyClass');
+    //_logger.finest('log MyClass');
   }
 }
 
@@ -18,7 +18,7 @@ class MyClass2 {
   }
 
   test1() {
-    _logger.finest('log MyClass2');
+    //_logger.finest('log MyClass2');
   }
 }
 

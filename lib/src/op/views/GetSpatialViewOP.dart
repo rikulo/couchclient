@@ -21,7 +21,7 @@ class GetSpatialViewOP extends GetHttpOP {
 
   void processResponse(HttpResult result) {
     String base = UTF8.decode(result.contents);
-    _logger.finest("GetSpatialViewOP:base->[$base]");
+    //_logger.finest("GetSpatialViewOP:base->[$base]");
     Map jo = JSON.decode(base);
     Map<String, Map> viewsjo = jo['spatial'];
     if (viewsjo != null) {

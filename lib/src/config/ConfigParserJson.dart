@@ -76,7 +76,7 @@ class ConfigParserJson {
       Node node = new Node(status, hostname, ports);
       nodes.add(node);
     }
-    _logger.finest("streamingUri->$streamingUri");
+    //_logger.finest("streamingUri->$streamingUri");
     return new Bucket(bucketname, config, Uri.parse(streamingUri), nodes);
   }
 }

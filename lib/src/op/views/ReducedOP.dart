@@ -10,7 +10,7 @@ class ReducedOP extends DocsOP {
 
   void processResponse(HttpResult result) {
     String base = UTF8.decode(result.contents);
-    _logger.finest("ReducedOP:base->[$base]");
+    //_logger.finest("ReducedOP:base->[$base]");
     Map jo = JSON.decode(base);
     List<ViewRow> viewRows = new List();
     List<ViewRowError> errors = new List();
@@ -23,7 +23,7 @@ class ReducedOP extends DocsOP {
       }
     }
     if (jo.containsKey('debug_info')) {
-      _logger.finest('Debug View $view.uri: base');
+      //_logger.finest('Debug View $view.uri: base');
     }
     if (jo.containsKey("errors")) {
       List<Map> errs = jo['errors'];

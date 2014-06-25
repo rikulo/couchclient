@@ -16,7 +16,7 @@ class RestConnection {
       : _connFactory = connFactory {
 
     _logger = initLogger('couchclient.spi', this);
-    _logger.finest('saddrs:$saddrs');
+    //_logger.finest('saddrs:$saddrs');
     couchNodes = createRestNodes(saddrs);
   }
 
@@ -45,7 +45,7 @@ class RestConnection {
           continue;
         }
         if (retries > 0) {
-          _logger.finest('Retrying rest operation "$op" on node: ${node.socketAddress}');
+          //_logger.finest('Retrying rest operation "$op" on node: ${node.socketAddress}');
         }
         node.addOP(op);
         break;

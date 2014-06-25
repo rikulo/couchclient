@@ -324,8 +324,8 @@ class CouchbaseConnectionFactory extends BinaryConnectionFactory {
             _logger.warning("Could not reset from doing a resubscribe.");
         });
     })
-    .catchError((err) {
-      _logger.warning("Resubscribe attempt failed: $err");
+    .catchError((err, st) {
+      _logger.warning("Resubscribe attempt failed", err, st);
       resubscribeProcess(reconnectAttempt); //try again!
     });
   }

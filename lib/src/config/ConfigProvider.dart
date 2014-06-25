@@ -161,7 +161,7 @@ class ConfigProvider {
         Future<Pool> fpool = _readUri(baseUri, pool.uri, restUsr, restPwd)
         .then((HttpResult result) {
           String poolstr = UTF8.decode(result.contents);
-          _logger.finest("pool->$poolstr");
+          //_logger.finest("pool->$poolstr");
           configParser.loadPool(pool, poolstr);
           return pool;
         });
@@ -174,7 +174,7 @@ class ConfigProvider {
       .then((List<Pool> pools) {
         List<Future<Pool>> bucketsfs = new List();
         for (Pool pool in pools) {
-          _logger.finest("pool.bucketsUri->${pool.bucketsUri}");
+          //_logger.finest("pool.bucketsUri->${pool.bucketsUri}");
           Future<Pool> fpool = _readUri(baseUri, pool.bucketsUri, restUsr, restPwd)
           .then((HttpResult result) {
             String bucketsStr = UTF8.decode(result.contents);

@@ -164,7 +164,7 @@ class CouchClientImpl extends MemcachedClientImpl implements CouchClient {
             obsPollInterval);
       }
     })
-    .catchError((err) => cmpl.completeError(err));
+    .catchError((err, st) => cmpl.completeError(err, st));
 
     return cmpl.future;
   }
@@ -281,7 +281,7 @@ class CouchClientImpl extends MemcachedClientImpl implements CouchClient {
         );
       }
     })
-    .catchError((err) => cmpl.completeError(err));
+    .catchError((err, st) => cmpl.completeError(err, st));
   }
 
   void _checkObserveReplica(String key, int numPersist, int numReplica,
@@ -316,7 +316,7 @@ class CouchClientImpl extends MemcachedClientImpl implements CouchClient {
       for (ViewRowNoDocs row in vr.rows) {
         ids.add(row.id);
       }
-      _logger.finest("--->ids:$ids");
+      //_logger.finest("--->ids:$ids");
       Map<String, GetResult> results = new HashMap();
       if (ids.isEmpty) {
         cmpl.complete(new ViewResponseWithDocs([], [], results));
@@ -325,7 +325,7 @@ class CouchClientImpl extends MemcachedClientImpl implements CouchClient {
         st.listen(
           (data) {
             results[data.key] = data;
-            _logger.finest("data:${data.key}");
+            //_logger.finest("data:${data.key}");
           },
           onError: (err) => _logger.warning(err),
           onDone: () {

@@ -11,7 +11,7 @@ abstract class PostHttpOP extends HttpOP {
       AuthDescriptor authDescriptor) {
     final String user = authDescriptor == null ? null : authDescriptor.bucket;
     final String pass = authDescriptor == null ? null : authDescriptor.password;
-    _logger.finest("user:$user, pass:$pass");
+    //_logger.finest("user:$user, pass:$pass");
     return HttpUtil.uriPost(hc, baseUri, cmd, user, pass, this.value,
         {'content-type' : 'application/json'});
   }

@@ -50,12 +50,12 @@ class Connect {
   void _processLoop() {
     new Future.delayed(new Duration())
     .then((_) {
-        _logger.finest("_processLoop...");
+        //_logger.finest("_processLoop...");
       if (_socket == null) {
-        _logger.finest("Wait socket to be connected.");
+        //_logger.finest("Wait socket to be connected.");
         _processLoop();
       } else {
-        _logger.finest("Write 'get key0 key0' to socket.");
+        //_logger.finest("Write 'get key0 key0' to socket.");
         _socket.write("get key0 key1\r\n");
       }
     })

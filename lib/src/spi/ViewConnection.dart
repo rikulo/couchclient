@@ -12,7 +12,7 @@ class ViewConnection implements Reconfigurable {
       : _connFactory = connFactory {
 
     _logger = initLogger('couchclient.spi', this);
-    _logger.finest('saddrs:$saddrs');
+    //_logger.finest('saddrs:$saddrs');
     couchNodes = createViewNodes(saddrs);
   }
 
@@ -40,9 +40,9 @@ class ViewConnection implements Reconfigurable {
           ++retries;
           continue;
         }
-        if (retries > 0) {
-          _logger.finest('Retrying view operation "$op" on node: ${node.socketAddress}');
-        }
+        //if (retries > 0) {
+        //  _logger.finest('Retrying view operation "$op" on node: ${node.socketAddress}');
+        //}
         node.addOP(op);
         break;
       } while(true);

@@ -68,13 +68,13 @@ class VbucketNodeLocator implements NodeLocator {
     if (diff.sequenceChanged
         || diff.vbucketsChanges > 0
         || current.couchServers.length != newConfig.couchServers.length) {
-      _logger.finest("Updating configuration, received updated configuration "
-          "with significant changes.");
+      //_logger.finest("Updating configuration, received updated configuration "
+      //    "with significant changes.");
       Map<String, MemcachedNode> nodesMap = _initNodesMap(newConfig, nodes);
       _fullConfig = new _TotalConfig(newConfig, nodesMap);
-    } else
-      _logger.finest("Received updated configuration with insignificant "
-          "changes.");
+    } //else
+      //_logger.finest("Received updated configuration with insignificant "
+      //    "changes.");
   }
 
   /**
@@ -119,7 +119,7 @@ class VbucketNodeLocator implements NodeLocator {
 
       if (nodesMap.containsKey(uri)) {
         nodesMap[uri] = node;
-        _logger.finest('Node "$node" added with address "$uri"');
+        //_logger.finest('Node "$node" added with address "$uri"');
       }
     }
 

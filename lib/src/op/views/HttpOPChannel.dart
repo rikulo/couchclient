@@ -50,7 +50,7 @@ class HttpOPChannel implements OPChannel<int, HttpOP> {
   //@Override
   void addOP(HttpOP op) {
     if (_closing) {
-      _logger.finest("The client is being closing; no way to addOP.");
+      //_logger.finest("The client is being closing; no way to addOP.");
       return;
     }
 
@@ -68,7 +68,7 @@ class HttpOPChannel implements OPChannel<int, HttpOP> {
    */
   void prependOP(HttpOP op) {
     if (_closing) {
-      _logger.finest("The client is being closing; no way to prependOP.");
+      //_logger.finest("The client is being closing; no way to prependOP.");
       return;
     }
 
@@ -83,7 +83,7 @@ class HttpOPChannel implements OPChannel<int, HttpOP> {
    * Close this Operation channel.
    */
   void close() {
-    _logger.finest("close: _writeQ.isEmpty:${writeQ.isEmpty}");
+    //_logger.finest("close: _writeQ.isEmpty:${writeQ.isEmpty}");
     _closing = true;
     _tryClose();
   }
@@ -103,21 +103,21 @@ class HttpOPChannel implements OPChannel<int, HttpOP> {
     new Future.delayed(new Duration(milliseconds:_FREQ))
     .then((_) {
 //      if (!isConnected) {
-//        _logger.finest("Wait HttpClient to be connected.");
+//        //_logger.finest("Wait HttpClient to be connected.");
 //        _processLoop();
 //      } else if (isAuthenticated == null) {
-//        _logger.finest("Wait socket to be authenticated.");
+//        //_logger.finest("Wait socket to be authenticated.");
 //        authenticate();
 //        _processLoop();
 //      } else if (!isAuthenticated) { //fail to authentication
 //        throw new StateError('Fail to authenticate...Stop operation');
 //      } else
         if (!_processWriteQ()) {
-        _logger.finest("Still OP in queue, continue the _processLoop.");
+        //_logger.finest("Still OP in queue, continue the _processLoop.");
         _processLoop();
       }
     })
-    .catchError((err) => _logger.warning("_processLoop:\n$err"));
+    .catchError((err, st) => _logger.warning("_processLoop", err, st));
   }
 
   //Process OP in write queue; return true to indicate no OP to process
@@ -136,7 +136,7 @@ class HttpOPChannel implements OPChannel<int, HttpOP> {
       return;
 
     _writeOP = writeQ.pop();
-    _logger.finest("OPState.WRITING: $_writeOP\n");
+    //_logger.finest("OPState.WRITING: $_writeOP\n");
     _writeOP.nextState();
 
     _processWriteOP();
