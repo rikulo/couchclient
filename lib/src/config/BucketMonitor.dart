@@ -69,9 +69,7 @@ class BucketMonitor extends Observable {
   // Connect to comet server and wait response
   Future<bool> _cometConnect() {
     return prepareRequest(channel = new HttpClient(), cometStreamUri, host)
-    .then((HttpClientRequest req) {
-      return req.close();
-    })
+    .then((HttpClientRequest req) => req.close())
     .then((HttpClientResponse resp) {
       //_logger.finest("Start bucket monitor host:$host, uri:$cometStreamUri");
       resp.listen(

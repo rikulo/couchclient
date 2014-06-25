@@ -327,7 +327,10 @@ class CouchClientImpl extends MemcachedClientImpl implements CouchClient {
             results[data.key] = data;
             //_logger.finest("data:${data.key}");
           },
-          onError: (err) => _logger.warning(err),
+          onError: (err, st) {
+            _logger.warning("Failed to query with $ids", err, st);
+            cmpl.completeError(err, st);
+          },
           onDone: () {
             List<ViewRowWithDocs> docs = new List();
             for (ViewRowNoDocs r in vr.rows) {
