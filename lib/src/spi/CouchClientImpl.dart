@@ -10,7 +10,18 @@ class CouchClientImpl extends MemcachedClientImpl implements CouchClient {
   CouchbaseConnectionFactory _connFactory;
   Logger _logger;
 
-  static Future<CouchClient> connect(CouchbaseConnectionFactory factory) {
+  static Future<CouchClient> connect(CouchbaseConnectionFactory factory,
+    {void onError(error, stackTrace)}) {
+    if (onError == null)
+      return _connect(factory);
+
+    Future<CouchClient> op;
+    runZoned(() {
+      op = _connect(factory);
+    }, onError: onError);
+    return op;
+  }
+  static Future<CouchClient> _connect(CouchbaseConnectionFactory factory) {
     return factory.vbucketConfig.then((config) {
       ViewConnection viewConn = null;
       List<SocketAddress> saddrs =

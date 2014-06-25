@@ -124,12 +124,16 @@ abstract class CouchClient implements MemcachedClient, Reconfigurable {
    * + [baseList] - the Uri list of one or more servers from the cluster
    * + [bucket] - the bucket name in the cluster you want to connect.
    * + [password] - the password of the bucket
+   * + [onError] - the error handler. If specified, Couch Client will
+   * be started with runZoned, and any uncaught exception will be passed
+   * to [onError] (you can throw ex there to stop the execution if needed).
    */
   static Future<CouchClient> connect(
-      List<Uri> baseList, String bucket, String password) {
+      List<Uri> baseList, String bucket, String password,
+      {void onError(error, stackTrace)}) {
     return new Future.sync(() {
       final factory = new CouchbaseConnectionFactory(baseList, bucket, password);
-      return CouchClientImpl.connect(factory);
+      return CouchClientImpl.connect(factory, onError: onError);
     });
   }
 }

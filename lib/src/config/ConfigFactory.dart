@@ -5,10 +5,6 @@
 part of couchclient;
 
 class ConfigFactory {
-  Config parse(String data) {
-    Map jo = JSON.decode(data);
-  }
-
   Config parseJson(Map jo) =>
       !jo.containsKey('vBucketServerMap') ?
           parseCacheJson(jo) : parseEpJson(jo);

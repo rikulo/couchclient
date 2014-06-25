@@ -1,5 +1,5 @@
 name: couchclient
-version: 0.4.1+1
+version: 0.5.0
 author: Henri Chen <henrichen@rikulo.org>
 description: A Couchbase client library written in Dart language.
 homepage: https://github.com/rikulo/couchclient
@@ -8,6 +8,7 @@ dependencies:
   crypto: any
   logging: any
   memcached_client: any
+dev_dependencies:
   unittest: any
 environment:
-  sdk: ">=0.8.7"
+  sdk: ">=1.4.0"
