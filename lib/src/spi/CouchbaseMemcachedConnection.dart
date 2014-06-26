@@ -8,9 +8,8 @@ part of couchclient;
  * Couchbase client implementation of MemcachedConnection that handles
  * Reconfigurable.
  */
-//TODO: reconfiguration
 class CouchbaseMemcachedConnection extends MemcachedConnection
-implements Reconfigurable{
+implements Reconfigurable { //TODO: reconfiguration
   Logger _logger;
 
   CouchbaseMemcachedConnection(
@@ -25,18 +24,21 @@ implements Reconfigurable{
 
   //--Reconfigurable--//
   bool _reconfiguring = false;
+  @override
+  Future reconfigure(Bucket bucket) {
+    if (_reconfiguring)
+      return new Future.value();
 
-  void reconfigure(Bucket bucket) {
-    if (_reconfiguring) return;
-    try {
+    List<MemcachedNode> oddNodes = new List();
+    List<MemcachedNode> stayNodes = new List();
+    return new Future.sync(() {
+      _reconfiguring = true;
       // get a new collection of addresses from the received config
       final newSaddrs =
           new HashSet<SocketAddress>.from(
               HttpUtil.parseSocketAddressesFromUris(bucket.config.couchServers));
 
       // split current nodes to "shutdown" nodes and "stay" nodes
-      List<MemcachedNode> oddNodes = new List();
-      List<MemcachedNode> stayNodes = new List();
       for (MemcachedNode current in locator.allNodes) {
         if (newSaddrs.remove(current.socketAddress)) {
           stayNodes.add(current);
@@ -46,7 +48,9 @@ implements Reconfigurable{
       }
 
       // create a collection of new nodes
-      List<MemcachedNode> newNodes = connFactory.createNodes(newSaddrs);
+      return connFactory.createNodes(newSaddrs);
+    })
+    .then((List<MemcachedNode> newNodes) {
 
       // merge stay nodes with new nodes
       stayNodes.addAll(newNodes);
@@ -73,9 +77,9 @@ implements Reconfigurable{
         }
       }
       nodesToShutdown.addAll(oddNodes);
-    } finally {
+    })
+    .whenComplete(() {
       _reconfiguring = false;
-    }
+    });
   }
 }
-

@@ -71,10 +71,12 @@ class CouchbaseConnectionFactory extends BinaryConnectionFactory {
 
   @override
   Future<MemcachedConnection> createConnection(List<SocketAddress> saddrs) {
-    return new Future.sync(() {
-      List<MemcachedNode> nodes = createNodes(saddrs);
-      return createLocator(nodes).then((locator) {
-        return vbucketConfig.then((config) {
+    return createNodes(saddrs)
+    .then((List<MemcachedNode> nodes) {
+      return createLocator(nodes)
+      .then((locator) {
+        return vbucketConfig
+        .then((config) {
           if (config.configType == ConfigType.MEMCACHE) {
             return new CouchbaseMemcachedConnection(locator, this, opFactory, failureMode);
           } else if (config.configType == ConfigType.COUCHBASE) {
@@ -89,7 +91,8 @@ class CouchbaseConnectionFactory extends BinaryConnectionFactory {
 
   @override
   Future<NodeLocator> createLocator(List<MemcachedNode> nodes) {
-    return vbucketConfig.then((config) {
+    return vbucketConfig
+    .then((config) {
       if (config == null)
         throw new StateError("Couldn't get config");
 
@@ -120,7 +123,8 @@ class CouchbaseConnectionFactory extends BinaryConnectionFactory {
   int get viewTimeout => _viewTimeout;
 
   Future<Config> get vbucketConfig {
-    return configProvider.getBucketConfig(bucketName).then((bucketConfig) {
+    return configProvider.getBucketConfig(bucketName)
+    .then((bucketConfig) {
       if (bucketConfig == null)
         throw new StateError("Could not fetch valid configuration "
             "from provided nodes. Stopping.");
@@ -165,7 +169,8 @@ class CouchbaseConnectionFactory extends BinaryConnectionFactory {
    * + [persistTo] - the number of nodes expected to persist to.
    */
   Future<bool> checkConfigAgainstPersistence(PersistTo persistTo) {
-    return vbucketConfig.then((config) {
+    return vbucketConfig
+    .then((config) {
       int nodeCount = config.serversCount;
       if(persistTo.value > nodeCount) {
         _logger.fine("Currently, there are less nodes in the "
@@ -182,7 +187,8 @@ class CouchbaseConnectionFactory extends BinaryConnectionFactory {
    * + [replicateTo] - the number of nodes expected to replicate to.
    */
   Future<bool> checkConfigAgainstReplication(ReplicateTo replicateTo) {
-    return vbucketConfig.then((config) {
+    return vbucketConfig
+    .then((config) {
       int nodeCount = config.serversCount;
       if(replicateTo.value >= nodeCount) {
         _logger.fine("Currently, there are less nodes in the "

@@ -31,7 +31,8 @@ abstract class DeleteHttpOP extends HttpOP {
             new HttpResult(result.status,
                 result.headers, UTF8.encode('{"ok":false,"id":"_design/$docName"}')));
       }
-    });
+    })
+    .catchError((ex, st) => cmpl.completeError(ex, st));
     return cmpl.future;
   }
 }

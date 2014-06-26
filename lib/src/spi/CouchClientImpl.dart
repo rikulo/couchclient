@@ -22,7 +22,8 @@ class CouchClientImpl extends MemcachedClientImpl implements CouchClient {
     return op;
   }
   static Future<CouchClient> _connect(CouchbaseConnectionFactory factory) {
-    return factory.vbucketConfig.then((config) {
+    return factory.vbucketConfig
+    .then((config) {
       ViewConnection viewConn = null;
       List<SocketAddress> saddrs =
           HttpUtil.parseSocketAddressesFromStrings(config.servers);
@@ -30,9 +31,10 @@ class CouchClientImpl extends MemcachedClientImpl implements CouchClient {
         List<SocketAddress> uaddrs = _toSocketAddressesFromUri(config.couchServers);
         viewConn = factory.createViewConnection(uaddrs);
       }
+
       return factory.createConnection(saddrs)
-      .then((conn) => new CouchClientImpl(viewConn, conn, factory))
-      .then((client) {
+      .then((conn) {
+        final CouchClient client = new CouchClientImpl(viewConn, conn, factory);
         return factory.configProvider.subscribe(factory.bucketName, client)
         .then((ok) => client);
       });
@@ -115,6 +117,7 @@ class CouchClientImpl extends MemcachedClientImpl implements CouchClient {
          if (replica >= 0)
            nodes.add(vlocator.getServerByIndex(replica));
        }
+
        return handleBroadcastOperation(() =>
            opFactory.newObserveOP(key, cas), nodes.iterator)
        .then((results) {
@@ -311,7 +314,8 @@ class CouchClientImpl extends MemcachedClientImpl implements CouchClient {
     WithDocsOP op = new WithDocsOP(view, query);
     _handleHttpOperation(op);
     Completer<ViewResponseWithDocs> cmpl = new Completer();
-    op.future.then((vr) {
+    op.future
+    .then((vr) {
       List<String> ids = new List();
       for (ViewRowNoDocs row in vr.rows) {
         ids.add(row.id);
@@ -340,7 +344,8 @@ class CouchClientImpl extends MemcachedClientImpl implements CouchClient {
           }
         );
       }
-    });
+    })
+    .catchError((ex, st) => cmpl.completeError(ex, st));
     return cmpl.future;
   }
 
@@ -362,10 +367,14 @@ class CouchClientImpl extends MemcachedClientImpl implements CouchClient {
 
 //--Reconfigurable--//
   bool _reconfiguring = false;
-  void reconfigure(Bucket bucket) {
-    if (_reconfiguring) return;
-    try {
+  @override
+  Future reconfigure(Bucket bucket) {
+    if (_reconfiguring)
+      return new Future.value();
+
+    return new Future.sync(() {
       _reconfiguring = true;
+
       if (bucket.isNotUpdating) {
         _logger.info("Bucket configuration is disconnected from cluster "
             "configuration updates, attempting to reconnect.");
@@ -375,14 +384,17 @@ class CouchClientImpl extends MemcachedClientImpl implements CouchClient {
       _connFactory.configProvider.buckets[_connFactory.bucketName] = bucket;
 
       if(_viewConn != null) {
-        _viewConn.reconfigure(bucket);
+        return _viewConn.reconfigure(bucket);
       }
+    })
+    .then((_) {
       if (memcachedConn is Reconfigurable) {
-        (memcachedConn as Reconfigurable).reconfigure(bucket);
+        return (memcachedConn as Reconfigurable).reconfigure(bucket);
       }
-    } finally {
+    })
+    .whenComplete(() {
       _reconfiguring = false;
-    }
+    });
   }
 }
 

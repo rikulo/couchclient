@@ -134,7 +134,8 @@ class BucketMonitor extends Observable {
   Future<HttpClientRequest> prepareRequest(HttpClient hc, Uri uri, String h) {
     // Send the HTTP request.
     Future<HttpClientRequest> reqf = HttpUtil.prepareHttpGet(hc, null, uri);
-    return reqf.then((HttpClientRequest req) {
+    return reqf
+    .then((HttpClientRequest req) {
       HttpHeaders headers = req.headers;
       headers.host = h;
       headers.persistentConnection = true;

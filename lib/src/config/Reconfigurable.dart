@@ -11,5 +11,5 @@ abstract class Reconfigurable {
   /**
    * Called on configuration updates.
    */
-  void reconfigure(Bucket bucket);
+  Future reconfigure(Bucket bucket);
 }

@@ -64,10 +64,14 @@ class ViewConnection implements Reconfigurable {
    * or old ones need to be removed from the current configuration. This method
    * takes care that those operations are performed in the correct order.
    */
-  void reconfigure(Bucket bucket) {
-    if (_reconfiguring) return;
-    try {
+  @override
+  Future reconfigure(Bucket bucket) {
+    if (_reconfiguring)
+      return new Future.value();
+
+    return new Future.sync(() {
       _reconfiguring = true;
+
       final newSaddrs =
           new HashSet<SocketAddress>.from(
               HttpUtil.parseSocketAddressesFromUris(bucket.config.couchServers));
@@ -94,9 +98,9 @@ class ViewConnection implements Reconfigurable {
       for (ViewNode node in oddNodes) {
         node.close();
       }
-    } finally {
+    })
+    .whenComplete(() {
       _reconfiguring = false;
-    }
+    });
   }
 }
-

@@ -19,10 +19,10 @@ class ReconfigurableObserver implements Observer<Bucket> {
   /**
    * Delegates update to the reconfigurable passed in the constructor.
    */
-  void update(Observable o, Bucket arg) {
+  Future update(Observable o, Bucket arg) {
     //_logger.finest("Receive an update, notifying reconfigurables about a $arg");
     //_logger.finest("It says it is ${arg.name} and it is talking to ${arg.streamingUri}");
-    _reconfig.reconfigure(arg);
+    return _reconfig.reconfigure(arg);
   }
 
   @override

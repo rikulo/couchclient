@@ -112,12 +112,12 @@ class HttpOPChannel implements OPChannel<int, HttpOP> {
 //      } else if (!isAuthenticated) { //fail to authentication
 //        throw new StateError('Fail to authenticate...Stop operation');
 //      } else
-        if (!_processWriteQ()) {
+      if (!_processWriteQ()) {
         //_logger.finest("Still OP in queue, continue the _processLoop.");
         _processLoop();
       }
     })
-    .catchError((err, st) => _logger.warning("_processLoop", err, st));
+    .catchError((err, st) => _logger.warning("Failed to _processLoop", err, st));
   }
 
   //Process OP in write queue; return true to indicate no OP to process
@@ -150,6 +150,7 @@ class HttpOPChannel implements OPChannel<int, HttpOP> {
     .then((result) {
       op.processResponse(result);
     })
+    .catchError((ex, st) => _logger.warning("Failed to write $op", ex, st))
     .whenComplete(() => hc.close());
 
     //wait no response: we post the command and assume complete

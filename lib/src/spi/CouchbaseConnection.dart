@@ -26,18 +26,20 @@ implements Reconfigurable {
 
   //--Reconfigurable--//
   bool _reconfiguring = false;
-  void reconfigure(Bucket bucket) {
-    if (_reconfiguring) return;
-    _reconfiguring = true;
-    try {
-      // get a new collection of addresses from the received config
+  @override
+  Future reconfigure(Bucket bucket) {
+    if (_reconfiguring)
+      return new Future.value();
+
+    List<MemcachedNode> oddNodes = new List();
+    List<MemcachedNode> stayNodes = new List();
+    return new Future.sync(() {
+      _reconfiguring = true;
       final newSaddrs =
           new HashSet<SocketAddress>.from(
               HttpUtil.parseSocketAddressesFromStrings(bucket.config.servers));
       //_logger.finest("newSaddrs:$newSaddrs");
       // split current nodes to "shutdown" nodes and "stay" nodes
-      List<MemcachedNode> oddNodes = new List();
-      List<MemcachedNode> stayNodes = new List();
       for (MemcachedNode current in locator.allNodes) {
         if (newSaddrs.remove(current.socketAddress)) {
           stayNodes.add(current);
@@ -47,8 +49,9 @@ implements Reconfigurable {
       }
 
       // create a collection of new nodes
-      List<MemcachedNode> newNodes = _connFactory.createNodes(newSaddrs);
-
+      return _connFactory.createNodes(newSaddrs);
+    })
+    .then((List<MemcachedNode> newNodes) {
       // merge stay nodes with new nodes
       stayNodes.addAll(newNodes);
 
@@ -83,9 +86,10 @@ implements Reconfigurable {
         }
       }
       nodesToShutdown.addAll(oddNodes);
-    } finally {
+    })
+    .whenComplete(() {
       _reconfiguring = false;
-    }
+    });
   }
 
   /**
